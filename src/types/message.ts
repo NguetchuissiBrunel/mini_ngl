@@ -1,8 +1,11 @@
+import { Timestamp } from 'firebase/firestore';
+
 export interface Message {
-    content: { stringValue: string };
-    created_at: { timestampValue: string };
-    destinataire: { stringValue: string };
-    genre: { stringValue: string };
-    likes: { integerValue: string };
-    pseudo: { stringValue: string };
+    id?: string;
+    content: string;
+    created_at: Timestamp;
+    destinataire: string;
+    genre: string;
+    likes: number;
+    pseudo: string;
 }

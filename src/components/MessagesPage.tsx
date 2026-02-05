@@ -5,35 +5,31 @@ import { Share2, ArrowLeft } from 'lucide-react';
 import FloatingHearts from '@/components/FloatingHearts';
 import Link from 'next/link';
 
-// Interface adaptée au format de votre backend
-interface MessageData {
-  content: { stringValue: string };
-  created_at: { timestampValue: string };
-  destinataire: { stringValue: string };
-  genre: { stringValue: string };
-  likes: { integerValue: string };
-  pseudo: { stringValue: string };
-}
+import { Message } from '@/types/message';
 
 interface MessageCardProps {
-  message: MessageData;
+  message: Message;
+  onLike: (id: string) => void;
+  isLiked: boolean;
 }
 
 interface MessagesPageProps {
-  messages: MessageData[];
+  messages: Message[];
+  onLike: (id: string) => void;
+  likedMessages: string[];
 }
 
 // Composant pour un message individuel
-const MessageCard = ({ message }: MessageCardProps) => {
+const MessageCard = ({ message, onLike, isLiked }: MessageCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isSharing, setIsSharing] = useState(false);
 
-  // Extraire les valeurs du format backend
-  const pseudo = message.pseudo.stringValue;
-  const nom = message.destinataire.stringValue;
-  const genre = message.genre.stringValue;
-  const contenu = message.content.stringValue;
-  const likesCount = parseInt(message.likes.integerValue);
+  // Extraire les valeurs directement
+  const pseudo = message.pseudo;
+  const nom = message.destinataire;
+  const genre = message.genre;
+  const contenu = message.content;
+  const likesCount = message.likes;
 
   // Déterminer les images selon le genre
   const getImages = () => {
@@ -138,8 +134,9 @@ const MessageCard = ({ message }: MessageCardProps) => {
   };
 
   const handleLike = () => {
-    // Backend s'occupera de la logique
-    console.log('Like message:', pseudo, '→', nom);
+    if (message.id && !isLiked) {
+      onLike(message.id);
+    }
   };
 
   return (
@@ -280,10 +277,11 @@ const MessageCard = ({ message }: MessageCardProps) => {
         {/* Bouton Like à gauche */}
         <button
           onClick={handleLike}
-          className="flex items-center gap-1.5 sm:gap-2 bg-transparent hover:bg-pink-50 dark:hover:bg-rose-900/30 text-pink-600 dark:text-rose-400 px-3 sm:px-4 py-2 rounded-full transition-all duration-200 hover:scale-105 active:scale-95 text-sm sm:text-base"
-          title="J'aime"
+          disabled={isLiked}
+          className={`flex items-center gap-1.5 sm:gap-2 bg-transparent hover:bg-pink-50 dark:hover:bg-rose-900/30 text-pink-600 dark:text-rose-400 px-3 sm:px-4 py-2 rounded-full transition-all duration-200 hover:scale-105 active:scale-95 text-sm sm:text-base ${isLiked ? 'opacity-70 cursor-not-allowed' : ''}`}
+          title={isLiked ? "Déjà liké" : "J'aime"}
         >
-          {likesCount > 0 ? (
+          {isLiked || likesCount > 0 ? (
             <svg
               width="16"
               height="16"
@@ -306,7 +304,7 @@ const MessageCard = ({ message }: MessageCardProps) => {
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
           )}
-          <span className="font-medium">{likesCount > 0 ? likesCount : 'Like'}</span>
+          <span className="font-medium">{isLiked ? 'Déjà liké' : (likesCount > 0 ? likesCount : 'Like')}</span>
         </button>
 
         {/* Bouton Partager à droite */}
@@ -331,7 +329,7 @@ const MessageCard = ({ message }: MessageCardProps) => {
 };
 
 // Composant principal de la page
-export default function MessagesPage({ messages }: MessagesPageProps) {
+export default function MessagesPage({ messages, onLike, likedMessages }: MessagesPageProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const messagesPerPage = 10;
 
@@ -501,8 +499,13 @@ export default function MessagesPage({ messages }: MessagesPageProps) {
 
           {/* Grille de messages */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 mb-6 sm:mb-8 max-w-md mx-auto sm:max-w-none">
-            {currentMessages.map((message, index) => (
-              <MessageCard key={index} message={message} />
+            {currentMessages.map((message) => (
+              <MessageCard
+                key={message.id || Math.random().toString()}
+                message={message}
+                onLike={onLike}
+                isLiked={!!(message.id && likedMessages.includes(message.id))}
+              />
             ))}
           </div>
 
