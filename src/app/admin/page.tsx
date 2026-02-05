@@ -13,8 +13,7 @@ import {
     Clock,
     Zap,
     ToggleLeft,
-    ToggleRight,
-    Loader2
+    ToggleRight
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
@@ -23,7 +22,6 @@ import {
     orderBy,
     onSnapshot,
     doc,
-    getDoc,
     updateDoc
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -36,8 +34,10 @@ import ActivityChart from './components/ActivityChart';
 // Icons for dynamic display
 import FloatingHearts from '@/components/FloatingHearts';
 import { Message } from '@/types/message';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function AdminPage() {
+
     const [messages, setMessages] = useState<Message[]>([]);
     const [isOpen, setIsOpen] = useState<boolean | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -128,13 +128,9 @@ export default function AdminPage() {
     const engagement = (stats.totalMessages / (stats.uniqueReceivers || 1)).toFixed(1);
 
     if (isLoading) {
-        return (
-            <div className="min-h-screen bg-rose-50 flex flex-col items-center justify-center gap-4">
-                <Loader2 className="w-10 h-10 text-rose-500 animate-spin" />
-                <p className="text-rose-600 font-bold animate-pulse">Chargement de la console...</p>
-            </div>
-        );
+        return <LoadingScreen />;
     }
+
 
     return (
         <div className="relative min-h-screen bg-gradient-to-br from-rose-50 to-pink-100 dark:bg-[#2A1513] dark:from-[#2A1513] dark:to-[#1a0b0a] transition-colors duration-500 overflow-x-hidden p-4 md:p-8">

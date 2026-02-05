@@ -1,13 +1,15 @@
 export interface Message {
-    id: number;
+    id: number | string;
     content: string;
-    sender: string;
-    receiver: string;
+    pseudo: string;
+    destinataire: string;
     timestamp: string;
     reported: boolean;
     likes?: number;
     isAnonymous: boolean;
+    genre?: string;
 }
+
 
 export interface Stats {
     totalMessages: number;
@@ -32,8 +34,9 @@ export const mockMessages: Message[] = [
     {
         id: 1,
         content: "Tu es incroyable, chaque instant avec toi est magique",
-        sender: "Anonyme",
-        receiver: "Marie",
+        pseudo: "Anonyme",
+        destinataire: "Marie",
+        genre: "Femme",
         timestamp: "2024-02-14 10:30",
         reported: false,
         likes: 3,
@@ -42,8 +45,9 @@ export const mockMessages: Message[] = [
     {
         id: 2,
         content: "J'admire ton sourire qui illumine mes journées",
-        sender: "Alexandre",
-        receiver: "Lucas",
+        pseudo: "Alexandre",
+        destinataire: "Lucas",
+        genre: "Homme",
         timestamp: "2024-02-13 15:45",
         reported: true,
         likes: 5,
@@ -52,8 +56,9 @@ export const mockMessages: Message[] = [
     {
         id: 3,
         content: "Tu rends chaque instant spécial, merci d'exister",
-        sender: "Anonyme",
-        receiver: "Sophie",
+        pseudo: "Anonyme",
+        destinataire: "Sophie",
+        genre: "Femme",
         timestamp: "2024-02-14 09:15",
         reported: false,
         likes: 12,
@@ -62,8 +67,9 @@ export const mockMessages: Message[] = [
     {
         id: 4,
         content: "On se voit ce soir pour une surprise ?",
-        sender: "Pierre",
-        receiver: "Emma",
+        pseudo: "Pierre",
+        destinataire: "Emma",
+        genre: "Femme",
         timestamp: "2024-02-12 20:20",
         reported: false,
         likes: 8,
@@ -72,8 +78,9 @@ export const mockMessages: Message[] = [
     {
         id: 5,
         content: "Message contenant des propos inappropriés",
-        sender: "Anonyme",
-        receiver: "Thomas",
+        pseudo: "Anonyme",
+        destinataire: "Thomas",
+        genre: "Homme",
         timestamp: "2024-02-14 11:10",
         reported: true,
         likes: 0,
@@ -82,8 +89,9 @@ export const mockMessages: Message[] = [
     {
         id: 6,
         content: "Merci pour ton soutien, tu es une personne exceptionnelle",
-        sender: "Anonyme",
-        receiver: "Clara",
+        pseudo: "Anonyme",
+        destinataire: "Clara",
+        genre: "Femme",
         timestamp: "2024-02-13 14:30",
         reported: false,
         likes: 7,
@@ -92,8 +100,9 @@ export const mockMessages: Message[] = [
     {
         id: 7,
         content: "Tu mérites tout le bonheur du monde",
-        sender: "Juliette",
-        receiver: "Romain",
+        pseudo: "Juliette",
+        destinataire: "Romain",
+        genre: "Homme",
         timestamp: "2024-02-14 08:45",
         reported: false,
         likes: 15,
@@ -102,13 +111,15 @@ export const mockMessages: Message[] = [
     {
         id: 8,
         content: "Contenu signalé pour harcèlement",
-        sender: "Anonyme",
-        receiver: "Lisa",
+        pseudo: "Anonyme",
+        destinataire: "Lisa",
+        genre: "Femme",
         timestamp: "2024-02-11 16:20",
         reported: true,
         likes: 1,
         isAnonymous: true
     },
+
 ];
 
 // Données mockées pour les statistiques

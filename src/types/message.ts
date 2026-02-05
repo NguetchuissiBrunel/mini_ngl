@@ -8,4 +8,6 @@ export interface Message {
     genre: string;
     likes: number;
     pseudo: string;
+    reported?: boolean;
 }
+
