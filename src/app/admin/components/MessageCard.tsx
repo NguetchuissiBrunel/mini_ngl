@@ -2,7 +2,7 @@
 
 import { Heart, User, ChevronDown, ChevronUp, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
-import { Message } from '../data/mockData';
+import { Message } from '@/types/message';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface MessageCardProps {
@@ -22,6 +22,10 @@ export default function MessageCard({
         setIsExpanded(!isExpanded);
     };
 
+    const formattedDate = message.created_at?.toDate
+        ? message.created_at.toDate().toLocaleString('fr-FR')
+        : (message.created_at as any)?.toString() || 'Date inconnue';
+
     if (viewMode === 'card') {
         return (
             <motion.div
@@ -35,10 +39,10 @@ export default function MessageCard({
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center flex-wrap gap-2 mb-3">
                             <span className="text-[10px] font-bold text-rose-400 uppercase tracking-tighter bg-rose-100 dark:bg-rose-900/40 px-2 py-0.5 rounded-md">
-                                #{message.id}
+                                #{message.id?.slice(-6)}
                             </span>
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${message.sender === "Anonyme" ? 'bg-rose-500 text-white' : 'bg-blue-500 text-white'}`}>
-                                {message.sender}
+                            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-500 text-white">
+                                {message.pseudo}
                             </span>
                         </div>
 
@@ -57,7 +61,7 @@ export default function MessageCard({
                         </div>
                         <div>
                             <p className="text-[10px] text-rose-400 font-bold uppercase tracking-tight">Destinataire</p>
-                            <p className="text-xs font-bold text-rose-900 dark:text-rose-100">{message.receiver}</p>
+                            <p className="text-xs font-bold text-rose-900 dark:text-rose-100">{message.destinataire}</p>
                         </div>
                     </div>
 
@@ -84,7 +88,7 @@ export default function MessageCard({
                 className={`group hover:bg-rose-100/30 dark:hover:bg-rose-900/10 cursor-pointer transition-colors border-b border-rose-100/50 dark:border-rose-800/20 ${isExpanded ? 'bg-rose-50/50 dark:bg-rose-900/5' : ''}`}
             >
                 <td className="py-5 px-6">
-                    <span className="text-xs font-bold text-rose-400">#{message.id}</span>
+                    <span className="text-xs font-bold text-rose-400">#{message.id?.slice(-6)}</span>
                 </td>
                 <td className="py-5 px-6 max-w-xs">
                     <p className={`text-sm font-semibold text-rose-900 dark:text-rose-100 transition-colors ${isExpanded ? '' : 'truncate'} group-hover:text-rose-600`}>
@@ -92,18 +96,18 @@ export default function MessageCard({
                     </p>
                 </td>
                 <td className="py-5 px-6">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter ${message.sender === "Anonyme" ? 'bg-rose-500 text-white' : 'bg-blue-500 text-white'}`}>
-                        {message.sender}
+                    <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter bg-rose-500 text-white">
+                        {message.pseudo}
                     </span>
                 </td>
                 <td className="py-5 px-6">
                     <div className="flex items-center gap-2">
                         <User size={14} className="text-rose-400" />
-                        <span className="text-sm font-bold text-rose-700 dark:text-rose-300">{message.receiver}</span>
+                        <span className="text-sm font-bold text-rose-700 dark:text-rose-300">{message.destinataire}</span>
                     </div>
                 </td>
                 <td className="py-5 px-6">
-                    <span className="text-xs font-medium text-rose-500/70">{message.timestamp}</span>
+                    <span className="text-xs font-medium text-rose-500/70">{formattedDate}</span>
                 </td>
                 <td className="py-5 px-6 text-right">
                     <div className="flex items-center justify-end gap-3">
@@ -139,12 +143,10 @@ export default function MessageCard({
                                             <Heart size={14} className="text-rose-500" />
                                             <span className="font-bold">{message.likes || 0} Likes</span>
                                         </div>
-                                        {message.isAnonymous && (
-                                            <div className="flex items-center gap-2 text-xs text-rose-400 font-bold uppercase tracking-tighter">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                                                Agent Anonyme
-                                            </div>
-                                        )}
+                                        <div className="flex items-center gap-2 text-xs text-rose-400 font-bold uppercase tracking-tighter">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                                            Genre: {message.genre}
+                                        </div>
                                     </div>
                                 </div>
                             </motion.div>

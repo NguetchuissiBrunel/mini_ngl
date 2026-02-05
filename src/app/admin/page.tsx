@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
     Users,
     MessageSquare,
@@ -11,9 +11,22 @@ import {
     Bell,
     CheckCircle2,
     Clock,
-    Zap
+    Zap,
+    ToggleLeft,
+    ToggleRight,
+    Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import {
+    collection,
+    query,
+    orderBy,
+    onSnapshot,
+    doc,
+    getDoc,
+    updateDoc
+} from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 // Local Components
 import StatsCard from './components/StatsCard';
@@ -22,45 +35,106 @@ import ActivityChart from './components/ActivityChart';
 
 // Icons for dynamic display
 import FloatingHearts from '@/components/FloatingHearts';
-
-// Mock Data
-import {
-    mockMessages,
-    mockStats,
-    getAnonymousMessages
-} from './data/mockData';
+import { Message } from '@/types/message';
 
 export default function AdminPage() {
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [isOpen, setIsOpen] = useState<boolean | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState<'all' | 'today' | 'anonymous' | 'date'>('all');
     const [selectedDate, setSelectedDate] = useState('');
 
+    useEffect(() => {
+        // 1. Écouter les messages en temps réel
+        const q = query(collection(db, 'messages'), orderBy('created_at', 'desc'));
+        const unsubscribeMessages = onSnapshot(q, (snapshot) => {
+            const msgs = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            })) as Message[];
+            setMessages(msgs);
+            setIsLoading(false);
+        });
+
+        // 2. Écouter la visibilité en temps réel
+        const unsubscribeVisibility = onSnapshot(doc(db, 'config', 'visibility'), (doc) => {
+            if (doc.exists()) {
+                setIsOpen(doc.data().isOpen);
+            }
+        });
+
+        return () => {
+            unsubscribeMessages();
+            unsubscribeVisibility();
+        };
+    }, []);
+
+    const toggleVisibility = async () => {
+        if (isOpen === null) return;
+        try {
+            const visibilityRef = doc(db, 'config', 'visibility');
+            await updateDoc(visibilityRef, {
+                isOpen: !isOpen
+            });
+        } catch (error) {
+            console.error("Erreur lors du changement de visibilité:", error);
+        }
+    };
+
     // Filtered dataset
     const filteredMessages = useMemo(() => {
-        let result = [...mockMessages];
+        let result = [...messages];
 
         // Type Filter
-        if (filter === 'today') result = result.filter(m => m.timestamp.includes('2024-02-14'));
-        if (filter === 'anonymous') result = result.filter(m => m.isAnonymous);
+        if (filter === 'today') {
+            const today = new Date().toLocaleDateString('fr-FR');
+            result = result.filter(m => {
+                const date = m.created_at?.toDate ? m.created_at.toDate().toLocaleDateString('fr-FR') : '';
+                return date === today;
+            });
+        }
+
         if (filter === 'date' && selectedDate) {
-            result = result.filter(m => m.timestamp.includes(selectedDate));
+            const targetDate = new Date(selectedDate).toLocaleDateString('fr-FR');
+            result = result.filter(m => {
+                const date = m.created_at?.toDate ? m.created_at.toDate().toLocaleDateString('fr-FR') : '';
+                return date === targetDate;
+            });
         }
 
         // Search Filter
         if (searchTerm) {
-            const query = searchTerm.toLowerCase();
+            const queryStr = searchTerm.toLowerCase();
             result = result.filter(m =>
-                m.sender.toLowerCase().includes(query) ||
-                m.receiver.toLowerCase().includes(query) ||
-                m.content.toLowerCase().includes(query)
+                m.pseudo?.toLowerCase().includes(queryStr) ||
+                m.destinataire?.toLowerCase().includes(queryStr) ||
+                m.content?.toLowerCase().includes(queryStr)
             );
         }
 
         return result;
-    }, [searchTerm, filter, selectedDate]);
+    }, [messages, searchTerm, filter, selectedDate]);
 
-    // Engagement calculate
-    const engagement = (mockStats.totalMessages / (mockStats.activeUsers || 1)).toFixed(1);
+    const stats = useMemo(() => {
+        const today = new Date().toLocaleDateString('fr-FR');
+        return {
+            totalMessages: messages.length,
+            todayMessages: messages.filter(m => m.created_at?.toDate?.().toLocaleDateString('fr-FR') === today).length,
+            uniqueReceivers: new Set(messages.map(m => m.destinataire)).size
+        };
+    }, [messages]);
+
+    const engagement = (stats.totalMessages / (stats.uniqueReceivers || 1)).toFixed(1);
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-rose-50 flex flex-col items-center justify-center gap-4">
+                <Loader2 className="w-10 h-10 text-rose-500 animate-spin" />
+                <p className="text-rose-600 font-bold animate-pulse">Chargement de la console...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="relative min-h-screen bg-gradient-to-br from-rose-50 to-pink-100 dark:bg-[#2A1513] dark:from-[#2A1513] dark:to-[#1a0b0a] transition-colors duration-500 overflow-x-hidden p-4 md:p-8">
@@ -90,7 +164,21 @@ export default function AdminPage() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 w-full md:w-auto">
+                    <div className="flex items-center gap-6 w-full md:w-auto">
+                        {/* Toggle Status Site */}
+                        <div className="flex items-center gap-3 bg-white/60 dark:bg-rose-950/40 p-2 px-4 rounded-2xl border border-rose-200/50 dark:border-rose-800/20 shadow-sm">
+                            <span className="text-xs font-bold text-rose-900 dark:text-rose-100 uppercase tracking-tighter">
+                                Site: {isOpen ? 'Ouvert' : 'Fermé'}
+                            </span>
+                            <button
+                                onClick={toggleVisibility}
+                                className={`transition-colors duration-300 ${isOpen ? 'text-green-500' : 'text-rose-400'}`}
+                                title={isOpen ? "Fermer le site" : "Ouvrir le site"}
+                            >
+                                {isOpen ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
+                            </button>
+                        </div>
+
                         <div className="flex-1 md:flex-none relative group">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-400 group-focus-within:text-rose-600 transition-colors" size={18} />
                             <input
@@ -101,11 +189,6 @@ export default function AdminPage() {
                                 className="w-full md:w-64 pl-12 pr-4 py-3 rounded-2xl bg-white/60 dark:bg-rose-950/40 border border-transparent focus:border-rose-400/40 focus:ring-4 focus:ring-rose-400/10 outline-none dark:text-white transition-all font-medium text-sm"
                             />
                         </div>
-                        <button className="p-3 bg-white/80 dark:bg-rose-900/40 text-rose-500 rounded-2xl border border-rose-100 dark:border-rose-800/30 hover:bg-rose-500 hover:text-white transition-all shadow-sm relative">
-                            <Bell size={20} />
-                            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-rose-900 rounded-full animate-ping" />
-                            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-rose-900 rounded-full" />
-                        </button>
                     </div>
                 </motion.header>
 
@@ -113,9 +196,8 @@ export default function AdminPage() {
                 <div className="flex flex-wrap items-center gap-4 overflow-x-auto pb-2 scrollbar-none">
                     <div className="flex flex-wrap items-center gap-3">
                         {[
-                            { id: 'all', label: 'Global', icon: LayoutDashboard, count: mockMessages.length },
-                            { id: 'today', label: 'Aujourd\'hui', icon: Calendar, count: mockStats.todayMessages },
-                            { id: 'anonymous', label: 'Anonymes', icon: Users, count: getAnonymousMessages().length },
+                            { id: 'all', label: 'Global', icon: LayoutDashboard, count: messages.length },
+                            { id: 'today', label: 'Aujourd\'hui', icon: Calendar, count: stats.todayMessages },
                         ].map((f) => (
                             <button
                                 key={f.id}
@@ -164,19 +246,19 @@ export default function AdminPage() {
                     <div className="lg:col-span-4 space-y-10">
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
                             <StatsCard
-                                title="Communication Totale"
-                                value={mockStats.totalMessages}
+                                title="Messages Réels"
+                                value={stats.totalMessages}
                                 icon={MessageSquare}
                                 color="rose"
-                                trend={{ value: 12.5, isPositive: true }}
+                                trend={{ value: 100, isPositive: true }}
                                 delay={0.1}
                             />
                             <StatsCard
-                                title="Moyenne Engagement"
-                                value={`${engagement} msg`}
+                                title="Engagement"
+                                value={`${engagement} msg/u`}
                                 icon={Zap}
                                 color="pink"
-                                trend={{ value: 5.2, isPositive: true }}
+                                trend={{ value: 0, isPositive: true }}
                                 delay={0.2}
                             />
                         </div>
@@ -194,7 +276,7 @@ export default function AdminPage() {
                                     <tr className="bg-rose-100/50 dark:bg-rose-900/30 border-b border-rose-200/30 dark:border-rose-800/30">
                                         <th className="px-6 py-5 text-[10px] font-bold text-rose-400 uppercase tracking-widest">ID</th>
                                         <th className="px-6 py-5 text-[10px] font-bold text-rose-400 uppercase tracking-widest">Message</th>
-                                        <th className="px-6 py-5 text-[10px] font-bold text-rose-400 uppercase tracking-widest">Expéditeur</th>
+                                        <th className="px-6 py-5 text-[10px] font-bold text-rose-400 uppercase tracking-widest">Pseudo</th>
                                         <th className="px-6 py-5 text-[10px] font-bold text-rose-400 uppercase tracking-widest">Destinataire</th>
                                         <th className="px-6 py-5 text-[10px] font-bold text-rose-400 uppercase tracking-widest">Date</th>
                                         <th className="px-6 py-5 text-right"></th>
