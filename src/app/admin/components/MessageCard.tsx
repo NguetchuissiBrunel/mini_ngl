@@ -1,6 +1,6 @@
 'use client';
 
-import { Heart, User, ChevronDown, ChevronUp, MessageSquare } from 'lucide-react';
+import { Heart, User, ChevronDown, ChevronUp, MessageSquare, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Message } from '@/types/message';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,12 +9,14 @@ interface MessageCardProps {
     message: Message;
     viewMode?: 'card' | 'table-row';
     delay?: number;
+    onDelete?: (id: string) => void;
 }
 
 export default function MessageCard({
     message,
     viewMode = 'card',
-    delay = 0
+    delay = 0,
+    onDelete
 }: MessageCardProps) {
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -72,6 +74,20 @@ export default function MessageCard({
                                 {message.likes || 0}
                             </span>
                         </div>
+                        
+                        {onDelete && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (message.id) onDelete(message.id);
+                                }}
+                                className="p-2 text-rose-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-full transition-all"
+                                title="Supprimer le message"
+                            >
+                                <Trash2 size={18} />
+                            </button>
+                        )}
+
                         <div className="text-rose-400">
                             {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                         </div>
@@ -110,7 +126,19 @@ export default function MessageCard({
                     <span className="text-xs font-medium text-rose-500/70">{formattedDate}</span>
                 </td>
                 <td className="py-5 px-6 text-right">
-                    <div className="flex items-center justify-end gap-3">
+                    <div className="flex items-center justify-end gap-4">
+                        {onDelete && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (message.id) onDelete(message.id);
+                                }}
+                                className="p-2 text-rose-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-full transition-all"
+                                title="Supprimer le message"
+                            >
+                                <Trash2 size={18} />
+                            </button>
+                        )}
                         <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
                             <ChevronDown size={18} className="text-rose-400" />
                         </div>

@@ -24,7 +24,8 @@ import {
     onSnapshot,
     doc,
     getDoc,
-    updateDoc
+    updateDoc,
+    deleteDoc
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
@@ -55,6 +56,11 @@ export default function AdminPage() {
             })) as Message[];
             setMessages(msgs);
             setIsLoading(false);
+        }, (error) => {
+            console.warn("Permission de lecture refusée ou erreur Firestore (site fermé ?):", error);
+            // Si on a une erreur de permission, on affiche juste 0 messages mais on débloque l'UI
+            setMessages([]);
+            setIsLoading(false);
         });
 
         // 2. Écouter la visibilité en temps réel
@@ -79,6 +85,16 @@ export default function AdminPage() {
             });
         } catch (error) {
             console.error("Erreur lors du changement de visibilité:", error);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('Voulez-vous vraiment supprimer ce message ?')) return;
+        try {
+            await deleteDoc(doc(db, 'messages', id));
+        } catch (error) {
+            console.error("Erreur lors de la suppression:", error);
+            alert("Erreur lors de la suppression du message.");
         }
     };
 
@@ -288,6 +304,7 @@ export default function AdminPage() {
                                             key={m.id}
                                             message={m}
                                             viewMode="table-row"
+                                            onDelete={handleDelete}
                                         />
                                     )) : (
                                         <tr>
@@ -307,6 +324,7 @@ export default function AdminPage() {
                                     key={m.id}
                                     message={m}
                                     viewMode="card"
+                                    onDelete={handleDelete}
                                 />
                             ))}
                         </div>
