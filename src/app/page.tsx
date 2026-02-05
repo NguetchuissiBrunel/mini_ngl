@@ -23,6 +23,7 @@ export default function Page() {
               src="/cupidon_logo.png"
               alt="Cupidon Logo"
               fill
+              sizes="(max-width: 768px) 192px, 256px"
               className="object-cover rounded-full transition-all duration-300 "
               priority
             />
