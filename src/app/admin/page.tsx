@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
     Users,
     MessageSquare,
@@ -17,7 +18,8 @@ import {
     Loader2,
     TrendingUp,
     Filter,
-    ArrowUpDown
+    ArrowUpDown,
+    LogOut
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
@@ -46,12 +48,26 @@ export default function AdminPage() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [displayMessages, setDisplayMessages] = useState<boolean | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState<'all' | 'today' | 'date'>('all');
     const [sortBy, setSortBy] = useState<SortOption>('date');
     const [selectedDate, setSelectedDate] = useState('');
+    const router = useRouter();
 
     useEffect(() => {
+        // Authentification Check
+        const auth = localStorage.getItem('isAdminAuthenticated');
+        if (auth !== 'true') {
+            router.push('/login');
+        } else {
+            setIsAuthenticated(true);
+        }
+    }, [router]);
+
+    useEffect(() => {
+        if (isAuthenticated !== true) return;
+
         // 1. Écouter les messages en temps réel
         const q = query(collection(db, 'messages'), orderBy('created_at', 'desc'));
         const unsubscribeMessages = onSnapshot(q, (snapshot) => {
@@ -71,6 +87,8 @@ export default function AdminPage() {
         const unsubscribeVisibility = onSnapshot(doc(db, 'config', 'visibility'), (doc) => {
             if (doc.exists()) {
                 setDisplayMessages(doc.data().displayMessages ?? doc.data().isOpen ?? true);
+            } else {
+                setDisplayMessages(true);
             }
         });
 
@@ -78,7 +96,12 @@ export default function AdminPage() {
             unsubscribeMessages();
             unsubscribeVisibility();
         };
-    }, []);
+    }, [isAuthenticated]);
+
+    const handleLogout = () => {
+        localStorage.removeItem('isAdminAuthenticated');
+        router.push('/login');
+    };
 
     const togglePublicVisibility = async () => {
         if (displayMessages === null) return;
@@ -182,6 +205,10 @@ export default function AdminPage() {
 
     const averageLikes = stats.totalMessages > 0 ? (stats.totalLikes / stats.totalMessages).toFixed(1) : '0';
 
+    if (isAuthenticated === null) {
+        return null;
+    }
+
     if (isLoading) {
         return (
             <div className="min-h-screen bg-rose-50 flex flex-col items-center justify-center gap-4">
@@ -231,6 +258,15 @@ export default function AdminPage() {
                                 {displayMessages ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
                             </button>
                         </div>
+
+                        <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-2 px-4 py-2 bg-rose-500 text-white rounded-2xl hover:bg-rose-600 transition-all font-bold text-sm shadow-lg shadow-rose-500/20"
+                            title="Se déconnecter"
+                        >
+                            <LogOut size={18} />
+                            <span className="hidden sm:inline">Déconnexion</span>
+                        </button>
 
                         <div className="flex-1 md:flex-none relative group">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-400 group-focus-within:text-rose-600 transition-colors" size={18} />

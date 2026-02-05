@@ -1,24 +1,45 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import FloatingHearts from '@/components/FloatingHearts';
 import { ArrowLeft, Lock, User } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+
+// Identifiants administrateur (statiques comme demandé)
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = 'password';
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
+
+  // Rediriger si déjà connecté
+  useEffect(() => {
+    const auth = localStorage.getItem('isAdminAuthenticated');
+    if (auth === 'true') {
+      router.push('/admin');
+    }
+  }, [router]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simuler le chargement
+    setError('');
+
+    // Simulation d'un petit délai pour l'effet visuel
     setTimeout(() => {
-      setIsLoading(false);
-      // Ici, tu ajouteras la logique d'authentification Firebase
-      console.log('Login attempt:', { username, password });
-    }, 1500);
+      if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        localStorage.setItem('isAdminAuthenticated', 'true');
+        router.push('/admin');
+      } else {
+        setError('Identifiants incorrects. Veuillez réessayer.');
+        setIsLoading(false);
+      }
+    }, 800);
   };
 
   return (
@@ -54,6 +75,11 @@ export default function AdminLoginPage() {
 
           <div className="bg-white/60 dark:bg-rose-950/40 backdrop-blur-sm rounded-2xl border-2 border-rose-200 dark:border-rose-800 p-8 shadow-xl shadow-rose-500/10 dark:shadow-rose-900/20">
             <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div className="p-3 text-sm text-center text-red-500 bg-red-500/10 border border-red-500/20 rounded-xl">
+                  {error}
+                </div>
+              )}
               {/* Username */}
               <div className="space-y-2">
                 <label className="block text-rose-700 dark:text-rose-300 font-medium">
