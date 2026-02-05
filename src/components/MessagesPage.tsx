@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useLayoutEffect, useEffect } from 'react';
-import { Share2, ArrowLeft, Search, X } from 'lucide-react';
+import { Share2, ArrowLeft, Search, X, Heart } from 'lucide-react';
 import FloatingHearts from '@/components/FloatingHearts';
 import { useModal } from '@/context/ModalContext';
 import Link from 'next/link';

@@ -42,6 +42,7 @@ import ActivityChart from './components/ActivityChart';
 // Icons for dynamic display
 import FloatingHearts from '@/components/FloatingHearts';
 import { Message } from '@/types/message';
+import LoadingScreen from '@/components/LoadingScreen';
 
 type SortOption = 'date' | 'likes';
 
@@ -423,3 +424,11 @@ export default function AdminPage() {
         </div>
     );
 }
+function showConfirm(arg0: string, arg1: () => Promise<void>, arg2: string) {
+    throw new Error('Function not implemented.');
+}
+
+function showAlert(arg0: string, arg1: string, arg2: string) {
+    throw new Error('Function not implemented.');
+}
+
