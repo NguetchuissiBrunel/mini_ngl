@@ -36,7 +36,11 @@ export default function MessageCard({
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.2, delay }}
                 onClick={toggleExpand}
-                className={`bg-white/40 dark:bg-rose-950/20 backdrop-blur-md rounded-3xl p-5 border ${message.reported ? 'border-red-400/30' : 'border-rose-200/50 dark:border-rose-800/20'} hover:shadow-2xl hover:shadow-rose-400/10 transition-all group cursor-pointer`}
+                className={`bg-white/40 dark:bg-rose-950/20 backdrop-blur-md rounded-3xl p-5 border ${message.reported
+                        ? 'border-red-400/30 shadow-red-400/10'
+                        : 'border-rose-200/50 dark:border-rose-800/20 shadow-rose-400/5'
+                    } hover:shadow-2xl transition-all group cursor-pointer`}
+
             >
                 <div className="flex justify-between items-start mb-4">
                     <div className="flex-1 min-w-0">

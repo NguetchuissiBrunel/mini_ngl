@@ -22,6 +22,7 @@ import {
     LogOut
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useModal } from '@/context/ModalContext';
 import {
     collection,
     query,
@@ -45,6 +46,7 @@ import { Message } from '@/types/message';
 type SortOption = 'date' | 'likes';
 
 export default function AdminPage() {
+
     const [messages, setMessages] = useState<Message[]>([]);
     const [displayMessages, setDisplayMessages] = useState<boolean | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -117,13 +119,19 @@ export default function AdminPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Voulez-vous vraiment supprimer ce message ?')) return;
-        try {
-            await deleteDoc(doc(db, 'messages', id));
-        } catch (error) {
-            console.error("Erreur lors de la suppression:", error);
-            alert("Erreur lors de la suppression du message.");
-        }
+        showConfirm(
+            'Voulez-vous vraiment supprimer ce message ?',
+            async () => {
+                try {
+                    await deleteDoc(doc(db, 'messages', id));
+                    showAlert('Message supprimé avec succès.', 'Supprimé', 'success');
+                } catch (error) {
+                    console.error("Erreur lors de la suppression:", error);
+                    showAlert("Erreur lors de la suppression du message.", "Erreur", "error");
+                }
+            },
+            'Confirmation de suppression'
+        );
     };
 
     // Filtered and Sorted dataset
@@ -210,13 +218,9 @@ export default function AdminPage() {
     }
 
     if (isLoading) {
-        return (
-            <div className="min-h-screen bg-rose-50 flex flex-col items-center justify-center gap-4">
-                <Loader2 className="w-10 h-10 text-rose-500 animate-spin" />
-                <p className="text-rose-600 font-bold animate-pulse">Chargement de la console...</p>
-            </div>
-        );
+        return <LoadingScreen />;
     }
+
 
     return (
         <div className="relative min-h-screen bg-gradient-to-br from-rose-50 to-pink-100 dark:bg-[#2A1513] dark:from-[#2A1513] dark:to-[#1a0b0a] transition-colors duration-500 overflow-x-hidden p-4 md:p-8">

@@ -4,6 +4,7 @@ import FloatingHearts from '@/components/FloatingHearts';
 import { ArrowLeft, Heart, Send, MessageCircle, Sparkles, User, Users, Venus, Mars, Check, X } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useModal } from '@/context/ModalContext';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,6 +20,7 @@ export default function SendMessagePage() {
   });
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const { showAlert } = useModal();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -40,7 +42,7 @@ export default function SendMessagePage() {
 
     // Basic validation
     if (!formData.pseudo.trim() || !formData.recipient.trim() || !formData.message.trim()) {
-      alert('Veuillez remplir tous les champs obligatoires.');
+      showAlert('Veuillez remplir tous les champs obligatoires.', 'Champs requis', 'info');
       return;
     }
 
@@ -58,7 +60,7 @@ export default function SendMessagePage() {
       setShowSuccess(true);
     } catch (error) {
       console.error('Error adding document: ', error);
-      alert('Une erreur est survenue lors de l\'envoi du message.');
+      showAlert('Une erreur est survenue lors de l\'envoi du message.', 'Erreur', 'error');
     } finally {
       setLoading(false);
     }

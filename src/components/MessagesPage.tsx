@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useRef, useLayoutEffect } from 'react';
-import { Share2, ArrowLeft, Heart } from 'lucide-react';
+import { useState, useRef, useLayoutEffect, useEffect } from 'react';
+import { Share2, ArrowLeft, Search, X } from 'lucide-react';
 import FloatingHearts from '@/components/FloatingHearts';
+import { useModal } from '@/context/ModalContext';
 import Link from 'next/link';
 
 import { Message } from '@/types/message';
@@ -24,6 +25,7 @@ interface MessagesPageProps {
 const MessageCard = ({ message, onLike, isLiked }: MessageCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isSharing, setIsSharing] = useState(false);
+  const { showAlert } = useModal();
 
   // Extraire les valeurs directement
   const pseudo = message.pseudo;
@@ -51,37 +53,56 @@ const MessageCard = ({ message, onLike, isLiked }: MessageCardProps) => {
 
   const images = getImages();
 
+  // Pré-chargement des polices et de la bibliothèque pour éviter les délais au clic
+  useEffect(() => {
+    // Pré-charger la lib html-to-image
+    import('html-to-image').then(() => {
+      console.log('html-to-image pré-chargé');
+    });
+  }, []);
+
   const handleShare = async () => {
     if (!cardRef.current || isSharing) return;
 
-    // Vérifier si nous sommes dans un contexte sécurisé (requis pour navigator.share)
-    if (!window.isSecureContext && typeof navigator.share !== 'undefined') {
-      console.warn("Le partage natif nécessite une connexion HTTPS sécurisée.");
-    }
-
     setIsSharing(true);
+
+    // Ajout d'une classe temporaire pour stopper les animations pendant la capture
+    // Cela évite les décalages visuels et les erreurs de rendu sur mobile
+    const cardElement = cardRef.current;
+    cardElement.classList.add('capturing-screenshot');
+
     try {
-      // Attendre que les polices soient chargées pour un rendu parfait
+      // Attendre que les polices soient chargées
       if (document.fonts) {
         await document.fonts.ready;
       }
 
-      // Import dynamique de html-to-image
+      // Import dynamique (sera instantané car pré-chargé)
       const { toBlob } = await import('html-to-image');
 
+      // Optimisation mobile : pixelRatio réduit si petit écran pour la rapidité
+      const isMobile = window.innerWidth < 768;
+
       const options = {
-        pixelRatio: 2,
+        pixelRatio: isMobile ? 1.5 : 2,
         cacheBust: true,
         backgroundColor: '#ffffff',
-        filter: (node: HTMLElement) => node.id !== 'share-button',
+        filter: (node: HTMLElement) => {
+          // Filtrer les éléments qui pourraient gêner
+          return node.id !== 'share-button' && !node.classList?.contains('animate-ping-slow');
+        },
         style: {
           backdropFilter: 'none',
           backgroundColor: 'rgba(255, 255, 255, 0.98)',
         }
       };
 
-      // Capturer le composant directly en Blob
-      const blob = await toBlob(cardRef.current, options);
+      // Capturer le composant
+      const blob = await toBlob(cardElement, options);
+
+      // Retirer la classe de capture immédiatement après toBlob
+      cardElement.classList.remove('capturing-screenshot');
+
       if (!blob) throw new Error("La capture de l'image a échoué.");
 
       const file = new File([blob], `message-secret.png`, { type: 'image/png' });
@@ -96,23 +117,14 @@ const MessageCard = ({ message, onLike, isLiked }: MessageCardProps) => {
             text: `Regarde ce message secret ! 💌`,
           });
           sharedSuccessfully = true;
-          // Optionnel: Signaler le succès sur certains navigateurs qui ne bloquent pas
-          console.log("Partage réussi");
         } catch (shareError: any) {
-          // Erreur de partage native - on logue mais on ne bloque pas forcément
           console.log('Détail du retour navigator.share:', shareError.name);
-
-          // Si l'utilisateur a annulé, on considère ça comme une fin "normale" (pas d'erreur)
-          if (shareError.name === 'AbortError') {
-            return;
-          }
-
-          // Pour d'autres erreurs (ex: NotAllowedError), on tente le fallback
+          if (shareError.name === 'AbortError') return;
           console.warn('Le partage natif a échoué, essai du fallback...', shareError);
         }
       }
 
-      // Fallback : Téléchargement si le partage natif n'est pas dispo ou a échoué (hors annulation)
+      // Fallback : Téléchargement
       if (!sharedSuccessfully) {
         const dataUrl = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -120,17 +132,20 @@ const MessageCard = ({ message, onLike, isLiked }: MessageCardProps) => {
         link.href = dataUrl;
         link.click();
         URL.revokeObjectURL(dataUrl);
-        alert('Image générée ! Elle a été téléchargée automatiquement car le partage direct n\'est pas disponible. Vous pouvez maintenant l\'envoyer sur WhatsApp.');
-      } else {
-        // Succès du partage natif
-        // Note: Certains OS ferment l'onglet/app après partage, donc l'alerte peut ne pas être vue
-        // mais c'est bien de l'avoir pour confirmer le succès si possible.
-        console.log('Partage terminé avec succès');
+
+        // Message adapté si on est sur mobile hors HTTPS (ex: adresse IP locale)
+        const isNotSecure = !window.isSecureContext;
+        if (isNotSecure && isMobile) {
+          showAlert('Note : Le partage direct (WhatsApp/etc.) nécessite HTTPS. L\'image a été téléchargée à la place.', 'Contexte non sécurisé', 'info');
+        } else {
+          showAlert('Image prête ! Elle a été téléchargée car le partage direct n\'est pas supporté par votre navigateur.', 'Succès', 'success');
+        }
       }
 
     } catch (error: any) {
+      cardElement.classList.remove('capturing-screenshot');
       console.error('Erreur lors du processus de partage:', error);
-      alert(`Oups ! Une erreur est survenue : ${error.message || 'Erreur technique'}`);
+      showAlert(`Oups ! Une erreur est survenue : ${error.message || 'Erreur technique'}`, 'Erreur', 'error');
     } finally {
       setIsSharing(false);
     }
@@ -333,13 +348,28 @@ const MessageCard = ({ message, onLike, isLiked }: MessageCardProps) => {
 // Composant principal de la page
 export default function MessagesPage({ messages, onLike, likedMessages, isVisible = true }: MessagesPageProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
   const messagesPerPage = 10;
+
+  // Filtrer les messages
+  const filteredMessages = messages.filter(message => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      message.pseudo?.toLowerCase().includes(searchLower) ||
+      message.destinataire?.toLowerCase().includes(searchLower)
+    );
+  });
 
   // Calculer les messages à afficher
   const indexOfLastMessage = currentPage * messagesPerPage;
   const indexOfFirstMessage = indexOfLastMessage - messagesPerPage;
-  const currentMessages = messages.slice(indexOfFirstMessage, indexOfLastMessage);
-  const totalPages = Math.ceil(messages.length / messagesPerPage);
+  const currentMessages = filteredMessages.slice(indexOfFirstMessage, indexOfLastMessage);
+  const totalPages = Math.ceil(filteredMessages.length / messagesPerPage);
+
+  // Reset page if search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const goToPage = (pageNumber: number) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -499,6 +529,33 @@ export default function MessagesPage({ messages, onLike, likedMessages, isVisibl
             Messages d'amour 💕
           </h1>
 
+          {/* Barre de recherche */}
+          <div className="max-w-md mx-auto mb-8 sm:mb-12 relative group px-4">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-400 group-focus-within:text-rose-600 transition-colors" size={20} />
+              <input
+                type="text"
+                placeholder="Rechercher par pseudo ou nom..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-12 py-3.5 rounded-2xl bg-white/60 dark:bg-rose-950/40 border-2 border-rose-200 dark:border-rose-900/30 focus:border-rose-400 dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 outline-none dark:text-rose-100 transition-all font-medium text-base shadow-lg shadow-rose-500/5 placeholder-rose-300 dark:placeholder-rose-800"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-rose-100 dark:hover:bg-rose-950/60 text-rose-400 transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              )}
+            </div>
+            {searchTerm && (
+              <p className="text-center mt-3 text-sm text-rose-600 dark:text-rose-400 font-medium animate-pulse">
+                {filteredMessages.length} résultat{filteredMessages.length > 1 ? 's' : ''} trouvé{filteredMessages.length > 1 ? 's' : ''}
+              </p>
+            )}
+          </div>
+
           {/* Grille de messages */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 mb-6 sm:mb-8 max-w-md mx-auto sm:max-w-none">
             {currentMessages.map((message) => (
@@ -634,6 +691,10 @@ export default function MessagesPage({ messages, onLike, likedMessages, isVisibl
         .animate-ping-slow-delayed {
           animation: ping-slow 1.5s ease-out infinite;
           animation-delay: 0.75s;
+        }
+        .capturing-screenshot * {
+          animation: none !important;
+          transition: none !important;
         }
       `}</style>
     </div>
