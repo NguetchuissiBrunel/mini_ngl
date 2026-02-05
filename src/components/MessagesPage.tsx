@@ -55,50 +55,67 @@ const MessageCard = ({ message }: MessageCardProps) => {
   const handleShare = async () => {
     if (!cardRef.current || isSharing) return;
 
+    // Vérifier si nous sommes dans un contexte sécurisé (requis pour navigator.share)
+    if (!window.isSecureContext && typeof navigator.share !== 'undefined') {
+      alert("Le partage natif nécessite une connexion HTTPS sécurisée.");
+      // On continue quand même vers le fallback (téléchargement)
+    }
+
     setIsSharing(true);
     try {
-      // Import dynamique de html-to-image pour éviter les problèmes SSR
-      const { toPng } = await import('html-to-image');
+      // Attendre que les polices soient chargées pour un rendu parfait
+      if (document.fonts) {
+        await document.fonts.ready;
+      }
 
-      // Configuration pour une capture parfaite et identique au composant réel
+      // Import dynamique de html-to-image
+      const { toBlob } = await import('html-to-image');
+
       const options = {
-        pixelRatio: 2, // 2x suffisant pour un bon partage sans être trop lourd pour les mobiles
-        skipFonts: false,
+        pixelRatio: 2,
         cacheBust: true,
-        backgroundColor: '#ffffff', // Fond blanc forcé pour la capture pour éviter les zones transparentes imprévues
+        backgroundColor: '#ffffff',
+        filter: (node: HTMLElement) => node.id !== 'share-button',
         style: {
           backdropFilter: 'none',
           backgroundColor: 'rgba(255, 255, 255, 0.98)',
         }
       };
 
-      // Capturer le composant
-      const dataUrl = await toPng(cardRef.current, options);
+      // Capturer le composant directement en Blob (plus performant que PNG -> fetch)
+      const blob = await toBlob(cardRef.current, options);
+      if (!blob) throw new Error("Capture échouée");
 
-      // Convertir le dataUrl en File pour le partage
-      const res = await fetch(dataUrl);
-      const blob = await res.blob();
       const file = new File([blob], `message-secret.png`, { type: 'image/png' });
 
-      // Tenter le partage direct du fichier via Web Share API (Chrome Mobile & Safari)
+      // Partage direct
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: 'Message Secret',
-          text: `Regarde ce message secret ! 💌`,
-        });
+        try {
+          await navigator.share({
+            files: [file],
+            title: 'Message Secret',
+            text: `Regarde ce message secret ! 💌`,
+          });
+        } catch (shareError: any) {
+          // Ne pas afficher d'erreur si l'utilisateur a simplement annulé
+          if (shareError.name !== 'AbortError') {
+            throw shareError;
+          }
+        }
       } else {
-        // Fallback pour les navigateurs incompatibles (ex: Chrome Desktop)
+        // Fallback téléchargement
+        const dataUrl = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.download = `message-secret.png`;
         link.href = dataUrl;
         link.click();
+        URL.revokeObjectURL(dataUrl);
         alert('L\'image a été téléchargée. Vous pouvez maintenant l\'envoyer sur WhatsApp.');
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors du partage:', error);
-      alert('Une erreur est survenue lors du partage.');
+      alert(`Une erreur est survenue lors du partage : ${error.message || 'Erreur technique'}`);
     } finally {
       setIsSharing(false);
     }
@@ -107,7 +124,6 @@ const MessageCard = ({ message }: MessageCardProps) => {
   const handleLike = () => {
     // Backend s'occupera de la logique
     console.log('Like message:', pseudo, '→', nom);
-    // Ici vous pourrez appeler votre API pour incrémenter les likes
   };
 
   return (
@@ -124,7 +140,6 @@ const MessageCard = ({ message }: MessageCardProps) => {
             src={images.expediteur}
             alt="Expéditeur"
             className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-pink-300 dark:border-rose-500 flex-shrink-0"
-            crossOrigin="anonymous"
           />
           <p className="mt-1 sm:mt-2 text-xs sm:text-sm font-medium text-pink-600 dark:text-rose-400 text-center break-words w-full leading-tight">
             {pseudo}
@@ -230,7 +245,6 @@ const MessageCard = ({ message }: MessageCardProps) => {
             src={images.destinataire}
             alt="Destinataire"
             className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-pink-400 dark:border-rose-600 flex-shrink-0"
-            crossOrigin="anonymous"
           />
           <p className="mt-1 sm:mt-2 text-xs sm:text-sm font-medium text-pink-700 dark:text-rose-300 text-center break-words w-full leading-tight">
             {nom}
@@ -281,6 +295,7 @@ const MessageCard = ({ message }: MessageCardProps) => {
 
         {/* Bouton Partager à droite */}
         <button
+          id="share-button"
           onClick={handleShare}
           disabled={isSharing}
           className={`flex items-center gap-1.5 sm:gap-2 bg-pink-500 hover:bg-pink-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white px-3 sm:px-4 py-2 rounded-full shadow-md transition-all duration-200 ${isSharing ? 'opacity-70 cursor-wait' : 'hover:scale-105 active:scale-95'} text-sm sm:text-base`}
