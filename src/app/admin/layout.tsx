@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import ThemeToggle from '@/components/ThemeToggle';
 
 export const metadata: Metadata = {
   title: 'Admin Console - Mini NGL',
@@ -13,7 +12,6 @@ export default function AdminLayout({
 }) {
   return (
     <div className="min-h-screen">
-      <ThemeToggle />
       {children}
     </div>
   );

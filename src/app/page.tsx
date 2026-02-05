@@ -40,13 +40,13 @@ export default function Page() {
 
         <div className="flex flex-col md:flex-row gap-4 mt-8 w-full max-w-sm">
           {/* View Messages Button */}
-          <button className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white/40 dark:bg-rose-950/30 backdrop-blur-sm border-2 border-rose-400 dark:border-rose-600 text-rose-600 dark:text-rose-400 font-semibold hover:bg-rose-100/50 dark:hover:bg-rose-900/40 transition-all hover:scale-105 active:scale-95 shadow-sm group cursor-pointer w-full">
+          <Link href="/messages" className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white/40 dark:bg-rose-950/30 backdrop-blur-sm border-2 border-rose-400 dark:border-rose-600 text-rose-600 dark:text-rose-400 font-semibold hover:bg-rose-100/50 dark:hover:bg-rose-900/40 transition-all hover:scale-105 active:scale-95 shadow-sm group cursor-pointer w-full">
             <MessageCircle size={20} className="group-hover:animate-bounce" />
             <span>Voir les messages</span>
-          </button>
+          </Link>
 
           {/* Send Message Button */}
-          <Link href="/send-message" className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-rose-500 dark:bg-rose-600 text-white font-semibold hover:bg-rose-600 dark:hover:bg-rose-700 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-rose-500/30 dark:shadow-rose-900/50 cursor-pointer w-full border-2 border-transparent">
+          <Link href="/send" className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-rose-500 dark:bg-rose-600 text-white font-semibold hover:bg-rose-600 dark:hover:bg-rose-700 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-rose-500/30 dark:shadow-rose-900/50 cursor-pointer w-full border-2 border-transparent">
             <Send size={20} />
             <span>Envoyer un message</span>
           </Link>

@@ -1,7 +1,6 @@
 'use client';
 
 import FloatingHearts from '@/components/FloatingHearts';
-import ThemeToggle from '@/components/ThemeToggle';
 import { ArrowLeft, Lock, User } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -26,20 +25,20 @@ export default function AdminLoginPage() {
     <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-rose-50 to-pink-100 dark:bg-[#2A1513] dark:from-[#2A1513] dark:to-[#1a0b0a] transition-colors duration-300">
       {/* Background patterns */}
       <div className="absolute inset-0 hearts-bg opacity-100 pointer-events-none" />
-      
+
       {/* Floating hearts animation */}
       <FloatingHearts />
-      
+
       {/* Back button */}
-      <Link 
+      <Link
         href="/"
-        className="absolute top-6 left-6 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-white/40 dark:bg-rose-950/30 backdrop-blur-sm border-2 border-rose-400 dark:border-rose-600 text-rose-600 dark:text-rose-400 font-medium hover:bg-rose-100/50 dark:hover:bg-rose-900/40 transition-all hover:scale-105 active:scale-95 shadow-sm"
+        className="fixed top-4 left-4 z-50 flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-rose-950/60 backdrop-blur-md border border-white/50 dark:border-rose-950/30 shadow-lg transition-all hover:scale-110 active:scale-95 text-rose-600 dark:text-rose-500 pointer-events-auto cursor-pointer"
+        aria-label="Retour à l'accueil"
       >
-        <ArrowLeft size={18} />
-        Retour
+        <ArrowLeft size={24} />
       </Link>
-      
-      <div className="container mx-auto px-4 py-12 flex items-center justify-center min-h-screen z-10 relative">
+
+      <div className="container mx-auto px-4 py-16 md:py-20 flex items-center justify-center min-h-screen z-10 relative">
         <div className="w-full max-w-md">
           <div className="text-center mb-10 animate-float-hover">
             <div className="inline-flex items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-rose-500/20 to-pink-500/20 dark:from-rose-600/30 dark:to-pink-600/30 border-2 border-rose-400/30 dark:border-rose-600/30 mb-6">
@@ -52,7 +51,7 @@ export default function AdminLoginPage() {
               Connectez-vous pour gérer les messages
             </p>
           </div>
-          
+
           <div className="bg-white/60 dark:bg-rose-950/40 backdrop-blur-sm rounded-2xl border-2 border-rose-200 dark:border-rose-800 p-8 shadow-xl shadow-rose-500/10 dark:shadow-rose-900/20">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Username */}
@@ -74,7 +73,7 @@ export default function AdminLoginPage() {
                   />
                 </div>
               </div>
-              
+
               {/* Password */}
               <div className="space-y-2">
                 <label className="block text-rose-700 dark:text-rose-300 font-medium">
@@ -94,7 +93,7 @@ export default function AdminLoginPage() {
                   />
                 </div>
               </div>
-              
+
               {/* Submit Button */}
               <button
                 type="submit"
@@ -114,14 +113,14 @@ export default function AdminLoginPage() {
                 )}
               </button>
             </form>
-            
+
             <div className="mt-8 pt-6 border-t border-rose-300/50 dark:border-rose-700/50">
               <p className="text-center text-sm text-rose-600/80 dark:text-rose-400/80">
                 ⚠️ Cette page est réservée à l'administrateur du site.
               </p>
             </div>
           </div>
-          
+
           {/* Security notice */}
           <div className="mt-6 p-4 rounded-xl bg-amber-50/50 dark:bg-amber-900/20 border border-amber-300/50 dark:border-amber-700/50">
             <p className="text-sm text-amber-800 dark:text-amber-400 text-center">
