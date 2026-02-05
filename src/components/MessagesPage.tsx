@@ -57,8 +57,7 @@ const MessageCard = ({ message }: MessageCardProps) => {
 
     // Vérifier si nous sommes dans un contexte sécurisé (requis pour navigator.share)
     if (!window.isSecureContext && typeof navigator.share !== 'undefined') {
-      alert("Le partage natif nécessite une connexion HTTPS sécurisée.");
-      // On continue quand même vers le fallback (téléchargement)
+      console.warn("Le partage natif nécessite une connexion HTTPS sécurisée.");
     }
 
     setIsSharing(true);
@@ -82,13 +81,14 @@ const MessageCard = ({ message }: MessageCardProps) => {
         }
       };
 
-      // Capturer le composant directement en Blob (plus performant que PNG -> fetch)
+      // Capturer le composant directly en Blob
       const blob = await toBlob(cardRef.current, options);
-      if (!blob) throw new Error("Capture échouée");
+      if (!blob) throw new Error("La capture de l'image a échoué.");
 
       const file = new File([blob], `message-secret.png`, { type: 'image/png' });
 
-      // Partage direct
+      // Tentative de partage natif
+      let sharedSuccessfully = false;
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
           await navigator.share({
@@ -96,26 +96,42 @@ const MessageCard = ({ message }: MessageCardProps) => {
             title: 'Message Secret',
             text: `Regarde ce message secret ! 💌`,
           });
+          sharedSuccessfully = true;
+          // Optionnel: Signaler le succès sur certains navigateurs qui ne bloquent pas
+          console.log("Partage réussi");
         } catch (shareError: any) {
-          // Ne pas afficher d'erreur si l'utilisateur a simplement annulé
-          if (shareError.name !== 'AbortError') {
-            throw shareError;
+          // Erreur de partage native - on logue mais on ne bloque pas forcément
+          console.log('Détail du retour navigator.share:', shareError.name);
+
+          // Si l'utilisateur a annulé, on considère ça comme une fin "normale" (pas d'erreur)
+          if (shareError.name === 'AbortError') {
+            return;
           }
+
+          // Pour d'autres erreurs (ex: NotAllowedError), on tente le fallback
+          console.warn('Le partage natif a échoué, essai du fallback...', shareError);
         }
-      } else {
-        // Fallback téléchargement
+      }
+
+      // Fallback : Téléchargement si le partage natif n'est pas dispo ou a échoué (hors annulation)
+      if (!sharedSuccessfully) {
         const dataUrl = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.download = `message-secret.png`;
         link.href = dataUrl;
         link.click();
         URL.revokeObjectURL(dataUrl);
-        alert('L\'image a été téléchargée. Vous pouvez maintenant l\'envoyer sur WhatsApp.');
+        alert('Image générée ! Elle a été téléchargée automatiquement car le partage direct n\'est pas disponible. Vous pouvez maintenant l\'envoyer sur WhatsApp.');
+      } else {
+        // Succès du partage natif
+        // Note: Certains OS ferment l'onglet/app après partage, donc l'alerte peut ne pas être vue
+        // mais c'est bien de l'avoir pour confirmer le succès si possible.
+        console.log('Partage terminé avec succès');
       }
 
     } catch (error: any) {
-      console.error('Erreur lors du partage:', error);
-      alert(`Une erreur est survenue lors du partage : ${error.message || 'Erreur technique'}`);
+      console.error('Erreur lors du processus de partage:', error);
+      alert(`Oups ! Une erreur est survenue : ${error.message || 'Erreur technique'}`);
     } finally {
       setIsSharing(false);
     }
