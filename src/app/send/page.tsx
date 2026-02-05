@@ -1,9 +1,11 @@
 'use client';
 
 import FloatingHearts from '@/components/FloatingHearts';
-import { ArrowLeft, Heart, Send, MessageCircle, Mail, Sparkles, User, Users, Venus, Mars } from 'lucide-react';
+import { ArrowLeft, Heart, Send, MessageCircle, Sparkles, User, Users, Venus, Mars } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export default function SendMessagePage() {
   const [formData, setFormData] = useState({
@@ -12,6 +14,7 @@ export default function SendMessagePage() {
     gender: 'Femme',
     message: ''
   });
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -28,11 +31,41 @@ export default function SendMessagePage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Ici tu ajouteras la logique d'envoi vers Firebase
-    alert('Message envoyé avec succès!');
+
+    // Basic validation
+    if (!formData.pseudo.trim() || !formData.recipient.trim() || !formData.message.trim()) {
+      alert('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await addDoc(collection(db, 'messages'), {
+        content: formData.message,
+        destinataire: formData.recipient,
+        pseudo: formData.pseudo,
+        genre: formData.gender,
+        likes: 0,
+        created_at: serverTimestamp(),
+      });
+
+      // Clear the form after successful submission
+      setFormData({
+        pseudo: '',
+        recipient: '',
+        gender: 'Femme',
+        message: ''
+      });
+
+      alert('Message envoyé avec succès!');
+    } catch (error) {
+      console.error('Error adding document: ', error);
+      alert('Une erreur est survenue lors de l\'envoi du message.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -84,6 +117,7 @@ export default function SendMessagePage() {
                   required
                   className="w-full px-3 py-2.5 rounded-xl bg-white/70 dark:bg-rose-950/60 border-2 border-rose-300 dark:border-rose-700 text-rose-900 dark:text-rose-100 placeholder-rose-400/70 dark:placeholder-rose-400/50 focus:outline-none focus:border-rose-500 dark:focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition-all text-sm"
                   placeholder="Ex: AmourSecret23"
+                  disabled={loading}
                 />
               </div>
 
@@ -101,6 +135,7 @@ export default function SendMessagePage() {
                   required
                   className="w-full px-3 py-2.5 rounded-xl bg-white/70 dark:bg-rose-950/60 border-2 border-rose-300 dark:border-rose-700 text-rose-900 dark:text-rose-100 placeholder-rose-400/70 dark:placeholder-rose-400/50 focus:outline-none focus:border-rose-500 dark:focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition-all text-sm"
                   placeholder="Ex: Marie, Pierre..."
+                  disabled={loading}
                 />
               </div>
 
@@ -126,6 +161,7 @@ export default function SendMessagePage() {
                         <button
                           type="button"
                           onClick={toggleGender}
+                          disabled={loading}
                           className={`flex-1 h-full flex items-center justify-center text-lg font-bold transition-all duration-300 z-10 ${formData.gender === 'Femme'
                             ? 'text-white drop-shadow-sm'
                             : 'text-rose-800/90 dark:text-rose-300/90'
@@ -139,6 +175,7 @@ export default function SendMessagePage() {
                         <button
                           type="button"
                           onClick={toggleGender}
+                          disabled={loading}
                           className={`flex-1 h-full flex items-center justify-center text-lg font-bold transition-all duration-300 z-10 ${formData.gender === 'Homme'
                             ? 'text-white drop-shadow-sm'
                             : 'text-rose-800/90 dark:text-rose-300/90'
@@ -168,16 +205,18 @@ export default function SendMessagePage() {
                 className="w-full px-3 py-2.5 rounded-xl bg-white/70 dark:bg-rose-950/60 border-2 border-rose-300 dark:border-rose-700 text-rose-900 dark:text-rose-100 placeholder-rose-400/70 dark:placeholder-rose-400/50 focus:outline-none focus:border-rose-500 dark:focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 resize-none transition-all text-sm"
                 placeholder="Écrivez votre message ici... Soyez sincère et attentionné"
                 maxLength={400}
+                disabled={loading}
               />
             </div>
 
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 dark:from-rose-600 dark:to-pink-600 text-white font-bold hover:from-rose-600 hover:to-pink-600 dark:hover:from-rose-700 dark:hover:to-pink-700 transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-rose-500/30 dark:shadow-rose-900/50 cursor-pointer group"
+              disabled={loading}
+              className={`w-full flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 dark:from-rose-600 dark:to-pink-600 text-white font-bold transition-all shadow-lg shadow-rose-500/30 dark:shadow-rose-900/50 group ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:from-rose-600 hover:to-pink-600 dark:hover:from-rose-700 dark:hover:to-pink-700 hover:scale-[1.02] active:scale-95 cursor-pointer'}`}
             >
-              <Send size={18} className="group-hover:animate-bounce flex-shrink-0" />
-              <span>Envoyer</span>
+              <Send size={18} className={`${!loading && 'group-hover:animate-bounce'} flex-shrink-0`} />
+              <span>{loading ? 'Envoi en cours...' : 'Envoyer'}</span>
             </button>
           </form>
 
