@@ -14,7 +14,10 @@ import {
     Zap,
     ToggleLeft,
     ToggleRight,
-    Loader2
+    Loader2,
+    TrendingUp,
+    Filter,
+    ArrowUpDown
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
@@ -23,7 +26,6 @@ import {
     orderBy,
     onSnapshot,
     doc,
-    getDoc,
     updateDoc,
     deleteDoc
 } from 'firebase/firestore';
@@ -38,12 +40,15 @@ import ActivityChart from './components/ActivityChart';
 import FloatingHearts from '@/components/FloatingHearts';
 import { Message } from '@/types/message';
 
+type SortOption = 'date' | 'likes';
+
 export default function AdminPage() {
     const [messages, setMessages] = useState<Message[]>([]);
-    const [isOpen, setIsOpen] = useState<boolean | null>(null);
+    const [displayMessages, setDisplayMessages] = useState<boolean | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filter, setFilter] = useState<'all' | 'today' | 'anonymous' | 'date'>('all');
+    const [filter, setFilter] = useState<'all' | 'today' | 'date'>('all');
+    const [sortBy, setSortBy] = useState<SortOption>('date');
     const [selectedDate, setSelectedDate] = useState('');
 
     useEffect(() => {
@@ -57,8 +62,7 @@ export default function AdminPage() {
             setMessages(msgs);
             setIsLoading(false);
         }, (error) => {
-            console.warn("Permission de lecture refusée ou erreur Firestore (site fermé ?):", error);
-            // Si on a une erreur de permission, on affiche juste 0 messages mais on débloque l'UI
+            console.warn("Erreur Firestore:", error);
             setMessages([]);
             setIsLoading(false);
         });
@@ -66,7 +70,7 @@ export default function AdminPage() {
         // 2. Écouter la visibilité en temps réel
         const unsubscribeVisibility = onSnapshot(doc(db, 'config', 'visibility'), (doc) => {
             if (doc.exists()) {
-                setIsOpen(doc.data().isOpen);
+                setDisplayMessages(doc.data().displayMessages ?? doc.data().isOpen ?? true);
             }
         });
 
@@ -76,12 +80,13 @@ export default function AdminPage() {
         };
     }, []);
 
-    const toggleVisibility = async () => {
-        if (isOpen === null) return;
+    const togglePublicVisibility = async () => {
+        if (displayMessages === null) return;
         try {
             const visibilityRef = doc(db, 'config', 'visibility');
             await updateDoc(visibilityRef, {
-                isOpen: !isOpen
+                displayMessages: !displayMessages,
+                isOpen: true // Force le site à rester toujours ouvert
             });
         } catch (error) {
             console.error("Erreur lors du changement de visibilité:", error);
@@ -98,7 +103,7 @@ export default function AdminPage() {
         }
     };
 
-    // Filtered dataset
+    // Filtered and Sorted dataset
     const filteredMessages = useMemo(() => {
         let result = [...messages];
 
@@ -129,19 +134,53 @@ export default function AdminPage() {
             );
         }
 
+        // Sorting
+        if (sortBy === 'likes') {
+            result.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+        } else {
+            // Default is date desc, already handled by Firestore query but good to have safety
+            result.sort((a, b) => {
+                const dateA = a.created_at?.toDate?.()?.getTime() || 0;
+                const dateB = b.created_at?.toDate?.()?.getTime() || 0;
+                return dateB - dateA;
+            });
+        }
+
         return result;
-    }, [messages, searchTerm, filter, selectedDate]);
+    }, [messages, searchTerm, filter, selectedDate, sortBy]);
 
     const stats = useMemo(() => {
-        const today = new Date().toLocaleDateString('fr-FR');
+        const now = new Date();
+        const today = now.toLocaleDateString('fr-FR');
+
+        // Calculate daily averages for the chart (last 7 days)
+        const last7Days = Array.from({ length: 7 }, (_, i) => {
+            const d = new Date();
+            d.setDate(now.getDate() - (6 - i));
+            return d.toLocaleDateString('fr-FR');
+        });
+
+        const chartData = last7Days.map(dateStr => {
+            return messages.filter(m => m.created_at?.toDate?.().toLocaleDateString('fr-FR') === dateStr).length;
+        });
+
+        const dayLabels = last7Days.map(d => {
+            const date = new Date(d.split('/').reverse().join('-'));
+            return date.toLocaleDateString('fr-FR', { weekday: 'short' });
+        });
+
         return {
             totalMessages: messages.length,
             todayMessages: messages.filter(m => m.created_at?.toDate?.().toLocaleDateString('fr-FR') === today).length,
-            uniqueReceivers: new Set(messages.map(m => m.destinataire)).size
+            chart: {
+                labels: dayLabels,
+                datasets: [{ label: 'Messages', data: chartData }]
+            },
+            totalLikes: messages.reduce((acc, m) => acc + (m.likes || 0), 0)
         };
     }, [messages]);
 
-    const engagement = (stats.totalMessages / (stats.uniqueReceivers || 1)).toFixed(1);
+    const averageLikes = stats.totalMessages > 0 ? (stats.totalLikes / stats.totalMessages).toFixed(1) : '0';
 
     if (isLoading) {
         return (
@@ -154,7 +193,6 @@ export default function AdminPage() {
 
     return (
         <div className="relative min-h-screen bg-gradient-to-br from-rose-50 to-pink-100 dark:bg-[#2A1513] dark:from-[#2A1513] dark:to-[#1a0b0a] transition-colors duration-500 overflow-x-hidden p-4 md:p-8">
-            {/* Background elements */}
             <div className="fixed inset-0 hearts-bg opacity-30 pointer-events-none" />
             <FloatingHearts />
 
@@ -172,26 +210,25 @@ export default function AdminPage() {
                         </div>
                         <div>
                             <h1 className="text-2xl md:text-3xl font-bold text-rose-900 dark:text-rose-100 tracking-tight">
-                                Admin Console
+                                Console Admin
                             </h1>
                             <p className="text-xs md:text-sm text-rose-600/60 dark:text-rose-400/60 font-bold uppercase tracking-widest">
-                                Mini NGL Dashboard
+                                Gestion Mini NGL
                             </p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-6 w-full md:w-auto">
-                        {/* Toggle Status Site */}
                         <div className="flex items-center gap-3 bg-white/60 dark:bg-rose-950/40 p-2 px-4 rounded-2xl border border-rose-200/50 dark:border-rose-800/20 shadow-sm">
                             <span className="text-xs font-bold text-rose-900 dark:text-rose-100 uppercase tracking-tighter">
-                                Site: {isOpen ? 'Ouvert' : 'Fermé'}
+                                Affichage des messages: {displayMessages ? 'Activé' : 'Désactivé'}
                             </span>
                             <button
-                                onClick={toggleVisibility}
-                                className={`transition-colors duration-300 ${isOpen ? 'text-green-500' : 'text-rose-400'}`}
-                                title={isOpen ? "Fermer le site" : "Ouvrir le site"}
+                                onClick={togglePublicVisibility}
+                                className={`transition-colors duration-300 ${displayMessages ? 'text-green-500' : 'text-rose-400'}`}
+                                title={displayMessages ? "Masquer les messages sur la page publique" : "Afficher les messages sur la page publique"}
                             >
-                                {isOpen ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
+                                {displayMessages ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
                             </button>
                         </div>
 
@@ -208,8 +245,8 @@ export default function AdminPage() {
                     </div>
                 </motion.header>
 
-                {/* Action Bar (Filter) */}
-                <div className="flex flex-wrap items-center gap-4 overflow-x-auto pb-2 scrollbar-none">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    {/* Action Bar (Filter) */}
                     <div className="flex flex-wrap items-center gap-3">
                         {[
                             { id: 'all', label: 'Global', icon: LayoutDashboard, count: messages.length },
@@ -230,10 +267,23 @@ export default function AdminPage() {
                                 </span>
                             </button>
                         ))}
+
+                        <div className="h-8 w-[1px] bg-rose-200 dark:bg-rose-800 hidden sm:block mx-1" />
+
+                        <button
+                            onClick={() => setSortBy(sortBy === 'date' ? 'likes' : 'date')}
+                            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all border shrink-0 ${sortBy === 'likes'
+                                ? 'bg-amber-500 text-white border-transparent'
+                                : 'bg-white/40 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border-rose-200/50'
+                                }`}
+                        >
+                            <ArrowUpDown size={16} />
+                            <span>{sortBy === 'likes' ? 'Top Likes' : 'Plus récents'}</span>
+                        </button>
                     </div>
 
-                    <div className="flex items-center gap-3 bg-white/60 dark:bg-rose-950/40 p-2 rounded-full border border-rose-200/50 dark:border-rose-800/20 ml-auto shadow-sm group hover:border-rose-400/50 hover:bg-white/80 dark:hover:bg-rose-950/60 transition-all cursor-pointer relative overflow-hidden">
-                        <Calendar size={16} className="text-rose-500 ml-2 group-hover:scale-110 transition-transform relative z-0" />
+                    <div className="flex items-center gap-3 bg-white/60 dark:bg-rose-950/40 p-2 rounded-full border border-rose-200/50 dark:border-rose-800/20 shadow-sm group hover:border-rose-400/50 transition-all cursor-pointer relative">
+                        <Calendar size={16} className="text-rose-500 ml-2" />
                         <input
                             type="date"
                             value={selectedDate}
@@ -241,7 +291,7 @@ export default function AdminPage() {
                                 setSelectedDate(e.target.value);
                                 setFilter('date');
                             }}
-                            className="bg-transparent text-sm font-bold text-rose-700 dark:text-rose-300 outline-none pr-2 cursor-pointer [color-scheme:light] dark:[color-scheme:dark] relative z-10"
+                            className="bg-transparent text-sm font-bold text-rose-700 dark:text-rose-300 outline-none pr-2 cursor-pointer [color-scheme:light] dark:[color-scheme:dark]"
                         />
                         {filter === 'date' && (
                             <button
@@ -251,14 +301,13 @@ export default function AdminPage() {
                                 }}
                                 className="p-1 px-3 bg-rose-500 text-white rounded-full text-[10px] font-bold mr-1 hover:bg-rose-600 transition-colors"
                             >
-                                Reset
+                                X
                             </button>
                         )}
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                    {/* Left Column: Stats & Chart */}
                     <div className="lg:col-span-4 space-y-10">
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
                             <StatsCard
@@ -266,34 +315,29 @@ export default function AdminPage() {
                                 value={stats.totalMessages}
                                 icon={MessageSquare}
                                 color="rose"
-                                trend={{ value: 100, isPositive: true }}
                                 delay={0.1}
                             />
                             <StatsCard
-                                title="Engagement"
-                                value={`${engagement} msg/u`}
+                                title="Moyenne Likes"
+                                value={`${averageLikes} / msg`}
                                 icon={Zap}
                                 color="pink"
-                                trend={{ value: 0, isPositive: true }}
                                 delay={0.2}
                             />
                         </div>
 
-                        <ActivityChart />
-
+                        <ActivityChart data={stats.chart} />
                     </div>
 
-                    {/* Right Column: Messages List */}
                     <div className="lg:col-span-8 space-y-6">
-                        {/* Desktop List */}
                         <div className="hidden md:block bg-white/40 dark:bg-rose-950/20 backdrop-blur-xl rounded-[2.5rem] border border-white/50 dark:border-rose-800/10 overflow-hidden shadow-2xl transition-all">
                             <table className="w-full text-left">
                                 <thead>
                                     <tr className="bg-rose-100/50 dark:bg-rose-900/30 border-b border-rose-200/30 dark:border-rose-800/30">
-                                        <th className="px-6 py-5 text-[10px] font-bold text-rose-400 uppercase tracking-widest">ID</th>
                                         <th className="px-6 py-5 text-[10px] font-bold text-rose-400 uppercase tracking-widest">Message</th>
                                         <th className="px-6 py-5 text-[10px] font-bold text-rose-400 uppercase tracking-widest">Pseudo</th>
                                         <th className="px-6 py-5 text-[10px] font-bold text-rose-400 uppercase tracking-widest">Destinataire</th>
+                                        <th className="px-6 py-5 text-[10px] font-bold text-rose-400 uppercase tracking-widest">Likes</th>
                                         <th className="px-6 py-5 text-[10px] font-bold text-rose-400 uppercase tracking-widest">Date</th>
                                         <th className="px-6 py-5 text-right"></th>
                                     </tr>
@@ -309,7 +353,7 @@ export default function AdminPage() {
                                     )) : (
                                         <tr>
                                             <td colSpan={6} className="py-20 text-center text-rose-400 font-bold italic opacity-40">
-                                                Aucun message correspondant à votre recherche.
+                                                Aucun message trouvé.
                                             </td>
                                         </tr>
                                     )}
@@ -317,7 +361,6 @@ export default function AdminPage() {
                             </table>
                         </div>
 
-                        {/* Mobile Cards */}
                         <div className="md:hidden space-y-4">
                             {filteredMessages.map((m) => (
                                 <MessageCard
@@ -331,10 +374,9 @@ export default function AdminPage() {
                     </div>
                 </div>
 
-                {/* Footer info */}
                 <footer className="pt-10 pb-6 text-center">
                     <p className="text-xs font-bold text-rose-400 uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity">
-                        © {new Date().getFullYear()} Mini NGL Advanced Management • Secure Environment
+                        © {new Date().getFullYear()} Console Admin Mini NGL • Données Live
                     </p>
                 </footer>
             </div>

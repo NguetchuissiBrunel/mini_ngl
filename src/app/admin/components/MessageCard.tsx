@@ -74,7 +74,7 @@ export default function MessageCard({
                                 {message.likes || 0}
                             </span>
                         </div>
-                        
+
                         {onDelete && (
                             <button
                                 onClick={(e) => {
@@ -103,9 +103,6 @@ export default function MessageCard({
                 onClick={toggleExpand}
                 className={`group hover:bg-rose-100/30 dark:hover:bg-rose-900/10 cursor-pointer transition-colors border-b border-rose-100/50 dark:border-rose-800/20 ${isExpanded ? 'bg-rose-50/50 dark:bg-rose-900/5' : ''}`}
             >
-                <td className="py-5 px-6">
-                    <span className="text-xs font-bold text-rose-400">#{message.id?.slice(-6)}</span>
-                </td>
                 <td className="py-5 px-6 max-w-xs">
                     <p className={`text-sm font-semibold text-rose-900 dark:text-rose-100 transition-colors ${isExpanded ? '' : 'truncate'} group-hover:text-rose-600`}>
                         {message.content}
@@ -120,6 +117,12 @@ export default function MessageCard({
                     <div className="flex items-center gap-2">
                         <User size={14} className="text-rose-400" />
                         <span className="text-sm font-bold text-rose-700 dark:text-rose-300">{message.destinataire}</span>
+                    </div>
+                </td>
+                <td className="py-5 px-6">
+                    <div className="flex items-center gap-1.5">
+                        <Heart size={14} className="text-rose-500" fill="currentColor" />
+                        <span className="text-sm font-bold text-rose-700 dark:text-rose-300">{message.likes || 0}</span>
                     </div>
                 </td>
                 <td className="py-5 px-6">

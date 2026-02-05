@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useLayoutEffect } from 'react';
-import { Share2, ArrowLeft } from 'lucide-react';
+import { Share2, ArrowLeft, Heart } from 'lucide-react';
 import FloatingHearts from '@/components/FloatingHearts';
 import Link from 'next/link';
 
@@ -17,6 +17,7 @@ interface MessagesPageProps {
   messages: Message[];
   onLike: (id: string) => void;
   likedMessages: string[];
+  isVisible?: boolean;
 }
 
 // Composant pour un message individuel
@@ -329,7 +330,7 @@ const MessageCard = ({ message, onLike, isLiked }: MessageCardProps) => {
 };
 
 // Composant principal de la page
-export default function MessagesPage({ messages, onLike, likedMessages }: MessagesPageProps) {
+export default function MessagesPage({ messages, onLike, likedMessages, isVisible = true }: MessagesPageProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const messagesPerPage = 10;
 
@@ -509,8 +510,22 @@ export default function MessagesPage({ messages, onLike, likedMessages }: Messag
             ))}
           </div>
 
-          {/* Message si aucun message */}
-          {messages.length === 0 && (
+          {/* Message si aucun message ou messages masqués */}
+          {!isVisible ? (
+            <div className="text-center py-12 sm:py-20 px-4 bg-white/30 dark:bg-rose-950/20 backdrop-blur-md rounded-[2.5rem] border border-white/50 dark:border-rose-800/20 shadow-xl max-w-2xl mx-auto">
+              <div className="mb-6 flex justify-center">
+                <div className="p-4 bg-rose-100 dark:bg-rose-900/40 rounded-full">
+                  <Heart className="w-12 h-12 text-rose-400 animate-pulse" />
+                </div>
+              </div>
+              <p className="text-2xl sm:text-3xl text-rose-600 dark:text-rose-500 font-dancing font-bold mb-4">
+                Chut... C'est un secret ! 🤫
+              </p>
+              <p className="text-lg text-rose-700 dark:text-rose-300 italic">
+                "Les messages seront disponibles le 14 février à 20h. Revenez pour découvrir les merveilleuses déclarations..."
+              </p>
+            </div>
+          ) : messages.length === 0 && (
             <div className="text-center py-8 sm:py-12 px-4">
               <p className="text-lg sm:text-xl text-rose-600 dark:text-rose-400 font-medium">
                 Aucun message pour le moment 💔
