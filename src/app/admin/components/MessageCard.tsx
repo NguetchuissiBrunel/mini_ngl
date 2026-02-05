@@ -1,6 +1,6 @@
 'use client';
 
-import { Trash2, Heart, User, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, User, ChevronDown, ChevronUp, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
 import { Message } from '../data/mockData';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,25 +8,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface MessageCardProps {
     message: Message;
     viewMode?: 'card' | 'table-row';
-    onDelete?: (id: number) => void;
     delay?: number;
 }
 
 export default function MessageCard({
     message,
     viewMode = 'card',
-    onDelete,
     delay = 0
 }: MessageCardProps) {
     const [isExpanded, setIsExpanded] = useState(false);
 
     const toggleExpand = () => {
         setIsExpanded(!isExpanded);
-    };
-
-    const handleDelete = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (onDelete) onDelete(message.id);
     };
 
     if (viewMode === 'card') {
@@ -54,15 +47,6 @@ export default function MessageCard({
                                 "{message.content}"
                             </p>
                         </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 ml-4">
-                        <button
-                            onClick={handleDelete}
-                            className="p-2 rounded-xl bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-500 hover:text-white transition-all duration-300"
-                        >
-                            <Trash2 size={18} />
-                        </button>
                     </div>
                 </div>
 
@@ -126,12 +110,6 @@ export default function MessageCard({
                         <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
                             <ChevronDown size={18} className="text-rose-400" />
                         </div>
-                        <button
-                            onClick={handleDelete}
-                            className="p-2 rounded-lg bg-red-100 dark:bg-red-900/40 text-red-600 hover:bg-red-500 hover:text-white transition-all shadow-sm"
-                        >
-                            <Trash2 size={16} />
-                        </button>
                     </div>
                 </td>
             </tr>
