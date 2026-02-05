@@ -16,6 +16,7 @@ import {
     ToggleRight
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useModal } from '@/context/ModalContext';
 import {
     collection,
     query,
@@ -46,6 +47,7 @@ export default function AdminPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState<'all' | 'today' | 'anonymous' | 'date'>('all');
     const [selectedDate, setSelectedDate] = useState('');
+    const { showAlert, showConfirm } = useModal();
 
     useEffect(() => {
         // 1. Écouter les messages en temps réel
@@ -90,13 +92,19 @@ export default function AdminPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Voulez-vous vraiment supprimer ce message ?')) return;
-        try {
-            await deleteDoc(doc(db, 'messages', id));
-        } catch (error) {
-            console.error("Erreur lors de la suppression:", error);
-            alert("Erreur lors de la suppression du message.");
-        }
+        showConfirm(
+            'Voulez-vous vraiment supprimer ce message ?',
+            async () => {
+                try {
+                    await deleteDoc(doc(db, 'messages', id));
+                    showAlert('Message supprimé avec succès.', 'Supprimé', 'success');
+                } catch (error) {
+                    console.error("Erreur lors de la suppression:", error);
+                    showAlert("Erreur lors de la suppression du message.", "Erreur", "error");
+                }
+            },
+            'Confirmation de suppression'
+        );
     };
 
     // Filtered dataset
