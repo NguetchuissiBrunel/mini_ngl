@@ -60,7 +60,7 @@ function getMockMessages(count: number): Message[] {
       pseudo: { stringValue: 'AmoureuxDiscret' },
       destinataire: { stringValue: 'Lucas' },
       genre: { stringValue: 'homme' },
-      content: { stringValue: 'J\'adore passer du temps avec toi. Chaque moment est précieux.' },
+      content: { stringValue: 'J\'adore passer du temps avec toi. Chaque moment est précieux.J\'adore passer du temps avec toi. Chaque moment est précieux.J\'adore passer du temps avec toi. Chaque moment est précieux.J\'adore passer du temps avec toi. Chaque moment est précieux.J\'adore passer du temps avec toi. Chaque moment est précieux.J\'adore passer du temps avec toi. Chaque moment est précieux.J\'adore passer du temps avec toi. Chaque moment est précieux.' },
       likes: { integerValue: '3' },
       created_at: { timestampValue: new Date().toISOString() }
     },
