@@ -34,12 +34,14 @@ const MessageCard = ({ message, onLike, isLiked }: MessageCardProps) => {
 
   // Déterminer les images selon le genre
   const getImages = () => {
-    if (genre === 'femme') {
+    const lowerGenre = genre?.toLowerCase() || '';
+    if (lowerGenre === 'femme') {
       return {
         expediteur: '/love-boy.png', // homme → femme
         destinataire: '/cute-girl.png'
       };
     } else {
+      // Par défaut ou si 'homme'
       return {
         expediteur: '/love-girl.png', // femme → homme
         destinataire: '/cute-boy.png'
