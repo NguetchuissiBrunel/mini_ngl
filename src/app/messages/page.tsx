@@ -69,22 +69,28 @@ export default function Page() {
     }
   }, [displayMessages]);
 
-  const handleLike = async (messageId: string) => {
-    if (likedMessages.includes(messageId)) return;
+  const handleToggleLike = async (messageId: string) => {
+    const isLiked = likedMessages.includes(messageId);
 
     try {
       // Mettre à jour Firestore
       const messageRef = doc(db, 'messages', messageId);
       await updateDoc(messageRef, {
-        likes: increment(1)
+        likes: increment(isLiked ? -1 : 1)
       });
 
       // Mettre à jour le localStorage et l'état local
-      const newLikedMessages = [...likedMessages, messageId];
+      let newLikedMessages;
+      if (isLiked) {
+        newLikedMessages = likedMessages.filter(id => id !== messageId);
+      } else {
+        newLikedMessages = [...likedMessages, messageId];
+      }
+
       setLikedMessages(newLikedMessages);
       localStorage.setItem('likedMessages', JSON.stringify(newLikedMessages));
     } catch (error) {
-      console.error("Erreur lors du like:", error);
+      console.error("Erreur lors du toggle like:", error);
     }
   };
 
@@ -96,7 +102,7 @@ export default function Page() {
   return (
     <MessagesPage
       messages={messages}
-      onLike={handleLike}
+      onLike={handleToggleLike}
       likedMessages={likedMessages}
       isVisible={displayMessages ?? true}
     />

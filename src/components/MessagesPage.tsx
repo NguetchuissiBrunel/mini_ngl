@@ -278,34 +278,33 @@ const MessageCard = ({ message, onLike, isLiked }: MessageCardProps) => {
         {/* Bouton Like à gauche */}
         <button
           onClick={handleLike}
-          disabled={isLiked}
-          className={`flex items-center gap-1.5 sm:gap-2 bg-transparent hover:bg-pink-50 dark:hover:bg-rose-900/30 text-pink-600 dark:text-rose-400 px-3 sm:px-4 py-2 rounded-full transition-all duration-200 hover:scale-105 active:scale-95 text-sm sm:text-base ${isLiked ? 'opacity-70 cursor-not-allowed' : ''}`}
-          title={isLiked ? "Déjà liké" : "J'aime"}
+          className={`flex items-center gap-1.5 sm:gap-2 bg-transparent hover:bg-pink-50 dark:hover:bg-rose-900/30 text-pink-600 dark:text-rose-400 px-3 sm:px-4 py-2 rounded-full transition-all duration-200 hover:scale-105 active:scale-95 text-sm sm:text-base`}
+          title={isLiked ? "Retirer mon j'aime" : "J'aime"}
         >
-          {isLiked || likesCount > 0 ? (
+          {isLiked ? (
             <svg
-              width="16"
-              height="16"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="currentColor"
-              className="text-pink-500 dark:text-rose-500 sm:w-5 sm:h-5"
+              className="text-pink-500 dark:text-rose-500 sm:w-6 sm:h-6"
             >
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
           ) : (
             <svg
-              width="16"
-              height="16"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
-              className="text-pink-600 dark:text-rose-400 sm:w-5 sm:h-5"
+              className="text-pink-600 dark:text-rose-400 sm:w-6 sm:h-6"
             >
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
           )}
-          <span className="font-medium">{isLiked ? 'Déjà liké' : (likesCount > 0 ? likesCount : 'Like')}</span>
+          <span className="font-bold text-lg">{likesCount || 0}</span>
         </button>
 
         {/* Bouton Partager à droite */}
