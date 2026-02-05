@@ -2,6 +2,7 @@ import Image from 'next/image';
 import FloatingHearts from '@/components/FloatingHearts';
 import ThemeToggle from '@/components/ThemeToggle';
 import { MessageCircle, Send } from 'lucide-react';
+import Link from 'next/link';
 
 export default function Page() {
   return (
@@ -45,10 +46,10 @@ export default function Page() {
           </button>
 
           {/* Send Message Button */}
-          <button className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-rose-500 dark:bg-rose-600 text-white font-semibold hover:bg-rose-600 dark:hover:bg-rose-700 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-rose-500/30 dark:shadow-rose-900/50 cursor-pointer w-full border-2 border-transparent">
+          <Link href="/send-message" className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-rose-500 dark:bg-rose-600 text-white font-semibold hover:bg-rose-600 dark:hover:bg-rose-700 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-rose-500/30 dark:shadow-rose-900/50 cursor-pointer w-full border-2 border-transparent">
             <Send size={20} />
             <span>Envoyer un message</span>
-          </button>
+          </Link>
         </div>
       </div>
     </div>
