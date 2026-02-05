@@ -7,8 +7,8 @@ import { ArrowLeft, Lock, User } from 'lucide-react';
 import Link from 'next/link';
 
 // Identifiants administrateur (statiques comme demandé)
-const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = 'password';
+const ADMIN_USERNAME = process.env.NEXT_PUBLIC_ADMIN_USERNAME || 'admin';
+const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD ;
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState('');
