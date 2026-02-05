@@ -1,13 +1,16 @@
 'use client';
 
 import FloatingHearts from '@/components/FloatingHearts';
-import { ArrowLeft, Heart, Send, MessageCircle, Sparkles, User, Users, Venus, Mars } from 'lucide-react';
+import { ArrowLeft, Heart, Send, MessageCircle, Sparkles, User, Users, Venus, Mars, Check, X } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
 export default function SendMessagePage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     pseudo: '',
     recipient: '',
@@ -15,6 +18,7 @@ export default function SendMessagePage() {
     message: ''
   });
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -51,15 +55,7 @@ export default function SendMessagePage() {
         created_at: serverTimestamp(),
       });
 
-      // Clear the form after successful submission
-      setFormData({
-        pseudo: '',
-        recipient: '',
-        gender: 'Femme',
-        message: ''
-      });
-
-      alert('Message envoyé avec succès!');
+      setShowSuccess(true);
     } catch (error) {
       console.error('Error adding document: ', error);
       alert('Une erreur est survenue lors de l\'envoi du message.');
@@ -222,6 +218,58 @@ export default function SendMessagePage() {
 
         </div>
       </div>
+
+      {/* Success Modal */}
+      <AnimatePresence>
+        {showSuccess && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-rose-950/20 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white dark:bg-rose-950/90 border-2 border-rose-200 dark:border-rose-800 rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl relative overflow-hidden text-center"
+            >
+              {/* Background Decoration */}
+              <div className="absolute top-0 right-0 -mr-8 -mt-8 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl" />
+              <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl" />
+
+              <div className="relative z-10">
+                <div className="w-20 h-20 bg-gradient-to-br from-rose-500 to-pink-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-rose-500/30 rotate-3">
+                  <Check className="w-10 h-10 text-white" />
+                </div>
+
+                <h2 className="text-2xl font-bold text-rose-900 dark:text-rose-100 mb-2">Message Envoyé !</h2>
+                <p className="text-rose-600 dark:text-rose-400 font-medium mb-8">
+                  Votre déclaration a été transmise avec succès. Cupidon s'occupe du reste ! 🏹
+                </p>
+
+                <div className="space-y-3">
+                  <button
+                    onClick={() => {
+                      setFormData({
+                        pseudo: '',
+                        recipient: '',
+                        gender: 'Femme',
+                        message: ''
+                      });
+                      setShowSuccess(false);
+                    }}
+                    className="w-full py-4 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-2xl transition-all shadow-lg shadow-rose-500/20 active:scale-95 cursor-pointer"
+                  >
+                    Envoyer un autre message
+                  </button>
+                 <button
+                    onClick={() => window.open('https://cupi-kappa.vercel.app', '_blank', 'noopener,noreferrer')}
+                    className="w-full py-4 bg-white/50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 font-bold rounded-2xl transition-all border border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-900/60 active:scale-95 cursor-pointer"
+                  >
+                   Envoie une invitation
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

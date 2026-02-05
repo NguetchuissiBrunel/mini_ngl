@@ -31,9 +31,10 @@ export default function MessageCard({
     if (viewMode === 'card') {
         return (
             <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay }}
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2, delay }}
                 onClick={toggleExpand}
                 className={`bg-white/40 dark:bg-rose-950/20 backdrop-blur-md rounded-3xl p-5 border ${message.reported ? 'border-red-400/30' : 'border-rose-200/50 dark:border-rose-800/20'} hover:shadow-2xl hover:shadow-rose-400/10 transition-all group cursor-pointer`}
             >
@@ -49,9 +50,17 @@ export default function MessageCard({
                         </div>
 
                         <div className="mb-4">
-                            <p className={`text-sm md:text-base leading-relaxed ${isExpanded ? '' : 'line-clamp-2'} text-rose-900 dark:text-rose-100 font-medium whitespace-pre-wrap`}>
-                                "{message.content}"
-                            </p>
+                            <AnimatePresence initial={false}>
+                                <motion.div
+                                    initial={false}
+                                    animate={{ height: isExpanded ? 'auto' : '3em' }}
+                                    className="overflow-hidden"
+                                >
+                                    <p className={`text-sm md:text-base leading-relaxed text-rose-900 dark:text-rose-100 font-medium whitespace-pre-wrap ${!isExpanded ? 'line-clamp-2' : ''}`}>
+                                        "{message.content}"
+                                    </p>
+                                </motion.div>
+                            </AnimatePresence>
                         </div>
                     </div>
                 </div>
@@ -88,9 +97,12 @@ export default function MessageCard({
                             </button>
                         )}
 
-                        <div className="text-rose-400">
-                            {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                        </div>
+                        <motion.div
+                            animate={{ rotate: isExpanded ? 180 : 0 }}
+                            className="text-rose-400"
+                        >
+                            <ChevronDown size={20} />
+                        </motion.div>
                     </div>
                 </div>
             </motion.div>
