@@ -12,11 +12,13 @@ import {
   increment
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import LoadingScreen from '@/components/LoadingScreen';
 import MessagesPage from '@/components/MessagesPage';
 import type { Message } from '@/types/message';
 import FloatingHearts from '@/components/FloatingHearts';
 import { ArrowLeft, Heart } from 'lucide-react';
 import Link from 'next/link';
+
 
 export default function Page() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -90,14 +92,11 @@ export default function Page() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-rose-50 flex items-center justify-center">
-        <div className="animate-pulse text-rose-600 font-medium">Chargement...</div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (isOpen === false) {
+
     return (
       <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-rose-50 to-pink-100 dark:bg-[#2A1513] dark:from-[#2A1513] dark:to-[#1a0b0a] transition-colors duration-300 flex items-center justify-center">
         {/* Background patterns */}
