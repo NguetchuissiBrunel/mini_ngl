@@ -142,7 +142,7 @@ export default function SendMessagePage() {
               {/* Gender Toggle - Centré */}
               <div className="space-y-2 col-span-2 md:col-span-1 flex flex-col justify-center items-center">
                 <label className="block text-rose-700 dark:text-rose-300 font-medium text-sm mb-2 text-center">
-                  Genre
+                  Genre du destinataire
                 </label>
                 <div className="flex justify-center w-full">
                   <div className="relative w-full max-w-[180px]">
