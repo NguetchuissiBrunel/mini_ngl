@@ -26,6 +26,7 @@ interface MessagesPageProps {
 // Composant pour un message individuel
 const MessageCard = ({ message }: MessageCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const [isSharing, setIsSharing] = useState(false);
 
   // Extraire les valeurs du format backend
   const pseudo = message.pseudo.stringValue;
@@ -51,9 +52,56 @@ const MessageCard = ({ message }: MessageCardProps) => {
 
   const images = getImages();
 
-  const handleShare = () => {
-    // Fonction de partage désactivée - quelqu'un d'autre s'en chargera
-    console.log('Fonction de partage à implémenter');
+  const handleShare = async () => {
+    if (!cardRef.current || isSharing) return;
+
+    setIsSharing(true);
+    try {
+      // Import dynamique de html-to-image pour éviter les problèmes SSR
+      const { toPng } = await import('html-to-image');
+
+      // Configuration pour une capture parfaite et identique au composant réel
+      const options = {
+        pixelRatio: 2, // 2x suffisant pour un bon partage sans être trop lourd pour les mobiles
+        skipFonts: false,
+        cacheBust: true,
+        backgroundColor: '#ffffff', // Fond blanc forcé pour la capture pour éviter les zones transparentes imprévues
+        style: {
+          backdropFilter: 'none',
+          backgroundColor: 'rgba(255, 255, 255, 0.98)',
+        }
+      };
+
+      // Capturer le composant
+      const dataUrl = await toPng(cardRef.current, options);
+
+      // Convertir le dataUrl en File pour le partage
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const file = new File([blob], `message-secret.png`, { type: 'image/png' });
+
+      // Tenter le partage direct du fichier via Web Share API (Chrome Mobile & Safari)
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'Message Secret',
+          text: `Regarde ce message secret ! 💌`,
+        });
+      } else {
+        // Fallback pour les navigateurs incompatibles (ex: Chrome Desktop)
+        const link = document.createElement('a');
+        link.download = `message-secret.png`;
+        link.href = dataUrl;
+        link.click();
+        alert('L\'image a été téléchargée. Vous pouvez maintenant l\'envoyer sur WhatsApp.');
+      }
+
+    } catch (error) {
+      console.error('Erreur lors du partage:', error);
+      alert('Une erreur est survenue lors du partage.');
+    } finally {
+      setIsSharing(false);
+    }
   };
 
   const handleLike = () => {
@@ -231,18 +279,23 @@ const MessageCard = ({ message }: MessageCardProps) => {
           <span className="font-medium">{likesCount > 0 ? likesCount : 'Like'}</span>
         </button>
 
-        {/* Bouton Partager à droite (désactivé) */}
+        {/* Bouton Partager à droite */}
         <button
           onClick={handleShare}
-          className="flex items-center gap-1.5 sm:gap-2 bg-pink-500 hover:bg-pink-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white px-3 sm:px-4 py-2 rounded-full shadow-md transition-all duration-200 hover:scale-105 active:scale-95 text-sm sm:text-base opacity-50 cursor-not-allowed"
-          title="Partager (à venir)"
-          disabled
+          disabled={isSharing}
+          className={`flex items-center gap-1.5 sm:gap-2 bg-pink-500 hover:bg-pink-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white px-3 sm:px-4 py-2 rounded-full shadow-md transition-all duration-200 ${isSharing ? 'opacity-70 cursor-wait' : 'hover:scale-105 active:scale-95'} text-sm sm:text-base`}
+          title={isSharing ? "Génération de l'image..." : "Partager sur WhatsApp"}
         >
-          <Share2 size={16} className="sm:w-5 sm:h-5" />
-          <span className="font-medium">Partager</span>
+          {isSharing ? (
+            <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <Share2 size={16} className="sm:w-5 sm:h-5" />
+          )}
+          <span className="font-medium">{isSharing ? 'Génération...' : 'Partager'}</span>
         </button>
       </div>
     </div>
+
   );
 };
 
