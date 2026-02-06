@@ -109,7 +109,8 @@ const MessageCard = ({ message, onLike, isLiked }: MessageCardProps) => {
 
       if (!blob) throw new Error("La capture de l'image a échoué.");
 
-      const file = new File([blob], `message-secret.png`, { type: 'image/png' });
+      const uniqueFilename = `TellMi-${message.id || 'msg'}-${Date.now()}.png`;
+      const file = new File([blob], uniqueFilename, { type: 'image/png' });
 
       // Tentative de partage natif
       let sharedSuccessfully = false;
@@ -132,7 +133,7 @@ const MessageCard = ({ message, onLike, isLiked }: MessageCardProps) => {
       if (!sharedSuccessfully) {
         const dataUrl = URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.download = `message-secret.png`;
+        link.download = uniqueFilename;
         link.href = dataUrl;
         link.click();
         URL.revokeObjectURL(dataUrl);
@@ -156,7 +157,7 @@ const MessageCard = ({ message, onLike, isLiked }: MessageCardProps) => {
   };
 
   const handleLike = () => {
-    if (message.id && !isLiked && !isSharing) {
+    if (message.id && !isSharing) {
       onLike(message.id);
     }
   };
