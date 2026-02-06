@@ -8,7 +8,7 @@ import Link from 'next/link';
 
 // Identifiants administrateur (statiques comme demandé)
 const ADMIN_USERNAME = process.env.NEXT_PUBLIC_ADMIN_USERNAME || 'admin';
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD ;
+const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState('');
@@ -65,7 +65,7 @@ export default function AdminLoginPage() {
             <div className="inline-flex items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-rose-500/20 to-pink-500/20 dark:from-rose-600/30 dark:to-pink-600/30 border-2 border-rose-400/30 dark:border-rose-600/30 mb-6">
               <Lock className="w-10 h-10 text-rose-600 dark:text-rose-500" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-dancing font-bold text-rose-600 dark:text-rose-600 drop-shadow-sm mb-2">
+            <h1 className="text-4xl md:text-5xl font-allura font-bold text-rose-600 dark:text-rose-600 drop-shadow-sm mb-2">
               Accès Administrateur
             </h1>
             <p className="text-lg text-rose-800/80 dark:text-rose-500/90 font-medium">

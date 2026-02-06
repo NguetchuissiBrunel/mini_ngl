@@ -525,7 +525,7 @@ export default function MessagesPage({ messages, onLike, likedMessages, isVisibl
       <div className="relative z-10 py-16 sm:py-20 px-4 sm:px-6 md:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Titre de la page */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-dancing font-bold text-rose-600 dark:text-rose-500 text-center mb-4 sm:mb-8 drop-shadow-sm px-2">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-allura font-bold text-rose-600 dark:text-rose-500 text-center mb-4 sm:mb-8 drop-shadow-sm px-2">
             Messages d'amour 💕
           </h1>
 
@@ -576,7 +576,7 @@ export default function MessagesPage({ messages, onLike, likedMessages, isVisibl
                   <Heart className="w-12 h-12 text-rose-400 animate-pulse" />
                 </div>
               </div>
-              <p className="text-2xl sm:text-3xl text-rose-600 dark:text-rose-500 font-dancing font-bold mb-4">
+              <p className="text-2xl sm:text-3xl text-rose-600 dark:text-rose-500 font-allura font-bold mb-4">
                 Chut... C'est un secret ! 🤫
               </p>
               <p className="text-lg text-rose-700 dark:text-rose-300 italic">

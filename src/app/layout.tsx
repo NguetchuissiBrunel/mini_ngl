@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter, Allura, Dancing_Script } from 'next/font/google'
+import { Inter, Allura } from 'next/font/google'
 import './globals.css'
 import ThemeInitializer from '@/components/ThemeInitializer'
 import { ModalProvider } from '@/context/ModalContext'
@@ -7,13 +7,12 @@ import CustomModal from '@/components/CustomModal'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const allura = Allura({ weight: '400', subsets: ['latin'], variable: '--font-allura' })
-const dancingScript = Dancing_Script({ subsets: ['latin'], variable: '--font-dancing' })
 
 export const metadata: Metadata = {
   title: 'Tell-Mi',
   description: 'Envoyez des messages anonymes avec amour',
   icons: {
-    icon: '/icon.png',
+    icon: '/logo.png',
   },
 }
 
@@ -24,7 +23,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body className={`${inter.variable} ${allura.variable} ${dancingScript.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${allura.variable} font-sans antialiased`}>
         <ThemeInitializer />
         <ModalProvider>
           <main>

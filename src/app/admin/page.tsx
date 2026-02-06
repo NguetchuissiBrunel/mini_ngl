@@ -56,6 +56,7 @@ export default function AdminPage() {
     const [filter, setFilter] = useState<'all' | 'today' | 'date'>('all');
     const [sortBy, setSortBy] = useState<SortOption>('date');
     const [selectedDate, setSelectedDate] = useState('');
+    const { showAlert, showConfirm } = useModal();
     const router = useRouter();
 
     useEffect(() => {
@@ -423,12 +424,5 @@ export default function AdminPage() {
             </div>
         </div>
     );
-}
-function showConfirm(arg0: string, arg1: () => Promise<void>, arg2: string) {
-    throw new Error('Function not implemented.');
-}
-
-function showAlert(arg0: string, arg1: string, arg2: string) {
-    throw new Error('Function not implemented.');
 }
 

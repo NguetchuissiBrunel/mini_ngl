@@ -97,7 +97,7 @@ export default function CustomModal() {
 
                             {/* Text Section */}
                             <div className="space-y-2 mb-8">
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-rose-100 italic font-dancing">
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-rose-100 italic font-allura">
                                     {title}
                                 </h3>
                                 <p className="text-sm text-gray-600 dark:text-rose-300 leading-relaxed font-medium">

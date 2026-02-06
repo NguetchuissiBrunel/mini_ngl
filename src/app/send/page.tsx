@@ -88,10 +88,10 @@ export default function SendMessagePage() {
           <div className="inline-flex items-center justify-center p-3 rounded-full bg-rose-500/10 dark:bg-rose-500/20 mb-3">
             <Heart className="w-7 h-7 text-rose-600 dark:text-rose-500" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-dancing font-bold text-rose-600 dark:text-rose-600 drop-shadow-sm mb-2">
+          <h1 className="text-3xl md:text-4xl font-allura font-bold text-rose-600 dark:text-rose-600 drop-shadow-sm mb-2">
             Envoyer un Message d'Amour
           </h1>
-          <p className="text-md text-rose-800/80 dark:text-rose-500/90 font-medium flex items-center justify-center gap-2">
+          <p className="text-md text-rose-800/80 dark:text-rose-300/90 font-medium flex items-center justify-center gap-2">
             Exprimez vos sentiments
             <Sparkles className="w-4 h-4 text-rose-500" />
           </p>
@@ -260,11 +260,11 @@ export default function SendMessagePage() {
                   >
                     Envoyer un autre message
                   </button>
-                 <button
+                  <button
                     onClick={() => window.open('https://cupi-kappa.vercel.app', '_blank', 'noopener,noreferrer')}
                     className="w-full py-4 bg-white/50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 font-bold rounded-2xl transition-all border border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-900/60 active:scale-95 cursor-pointer"
                   >
-                   Envoie une invitation
+                    Envoie une invitation
                   </button>
                 </div>
               </div>

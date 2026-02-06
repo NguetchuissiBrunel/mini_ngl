@@ -49,7 +49,7 @@ export default function NotFound() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2, duration: 0.5 }}
                 >
-                    <h1 className="text-3xl md:text-4xl font-dancing font-bold text-rose-900 dark:text-rose-100 mb-4">
+                    <h1 className="text-3xl md:text-4xl font-allura font-bold text-rose-900 dark:text-rose-100 mb-4">
                         Oups ! Le lien s'est brisé...
                     </h1>
                     <p className="text-lg text-rose-700 dark:text-rose-300 mb-10 font-medium">
