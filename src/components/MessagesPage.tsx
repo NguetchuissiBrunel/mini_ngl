@@ -83,17 +83,21 @@ const MessageCard = ({ message, onLike, isLiked }: MessageCardProps) => {
       // Optimisation mobile : pixelRatio réduit si petit écran pour la rapidité
       const isMobile = window.innerWidth < 768;
 
+      // Détecter si on est en mode sombre pour adapter l'image générée
+      const isDarkMode = document.documentElement.classList.contains('dark');
+
       const options = {
         pixelRatio: isMobile ? 1.5 : 2,
         cacheBust: true,
-        backgroundColor: '#ffffff',
+        backgroundColor: isDarkMode ? '#1a0b0a' : '#ffffff', // Fond adapté au thème
         filter: (node: HTMLElement) => {
           // Filtrer les éléments qui pourraient gêner
           return node.id !== 'share-button' && !node.classList?.contains('animate-ping-slow');
         },
         style: {
           backdropFilter: 'none',
-          backgroundColor: 'rgba(255, 255, 255, 0.98)',
+          backgroundColor: isDarkMode ? 'rgba(42, 21, 19, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+          borderRadius: '24px', // S'assurer que les bords arrondis sont bien rendus
         }
       };
 
@@ -152,7 +156,7 @@ const MessageCard = ({ message, onLike, isLiked }: MessageCardProps) => {
   };
 
   const handleLike = () => {
-    if (message.id && !isLiked) {
+    if (message.id && !isLiked && !isSharing) {
       onLike(message.id);
     }
   };

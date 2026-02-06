@@ -69,28 +69,48 @@ export default function Page() {
     }
   }, [displayMessages]);
 
+  // État pour suivre les messages en cours de "lining" pour éviter les doubles clics
+  const [isLiking, setIsLiking] = useState<Set<string>>(new Set());
+
   const handleToggleLike = async (messageId: string) => {
+    // Si déjà en cours de traitement pour ce message, on ignore
+    if (isLiking.has(messageId)) return;
+
     const isLiked = likedMessages.includes(messageId);
 
+    // 1. Mise à jour optimiste de l'état local et du localStorage
+    let newLikedMessages;
+    if (isLiked) {
+      newLikedMessages = likedMessages.filter(id => id !== messageId);
+    } else {
+      newLikedMessages = [...likedMessages, messageId];
+    }
+
+    // Sauvegarde immédiate (optimiste)
+    setLikedMessages(newLikedMessages);
+    localStorage.setItem('likedMessages', JSON.stringify(newLikedMessages));
+
+    // Marquer comme "en cours"
+    setIsLiking(prev => new Set(prev).add(messageId));
+
     try {
-      // Mettre à jour Firestore
+      // 2. Mettre à jour Firestore
       const messageRef = doc(db, 'messages', messageId);
       await updateDoc(messageRef, {
         likes: increment(isLiked ? -1 : 1)
       });
-
-      // Mettre à jour le localStorage et l'état local
-      let newLikedMessages;
-      if (isLiked) {
-        newLikedMessages = likedMessages.filter(id => id !== messageId);
-      } else {
-        newLikedMessages = [...likedMessages, messageId];
-      }
-
-      setLikedMessages(newLikedMessages);
-      localStorage.setItem('likedMessages', JSON.stringify(newLikedMessages));
     } catch (error) {
       console.error("Erreur lors du toggle like:", error);
+      // Rollback en cas d'erreur
+      setLikedMessages(likedMessages);
+      localStorage.setItem('likedMessages', JSON.stringify(likedMessages));
+    } finally {
+      // Libérer le verrou
+      setIsLiking(prev => {
+        const next = new Set(prev);
+        next.delete(messageId);
+        return next;
+      });
     }
   };
 
