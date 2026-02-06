@@ -245,7 +245,7 @@ export default function AdminPage() {
                                 Console Admin
                             </h1>
                             <p className="text-xs md:text-sm text-rose-600/60 dark:text-rose-400/60 font-bold uppercase tracking-widest">
-                                Gestion Mini NGL
+                                Gestion TellMi
                             </p>
                         </div>
                     </div>
@@ -417,7 +417,7 @@ export default function AdminPage() {
 
                 <footer className="pt-10 pb-6 text-center">
                     <p className="text-xs font-bold text-rose-400 uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity">
-                        © {new Date().getFullYear()} Console Admin Mini NGL • Données Live
+                        © {new Date().getFullYear()} Console Admin TellMi • Données Live
                     </p>
                 </footer>
             </div>

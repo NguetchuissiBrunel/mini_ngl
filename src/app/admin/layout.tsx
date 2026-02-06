@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Admin Console - Mini NGL',
+  title: 'Admin Console - TellMi',
   description: 'Panel de gestion administrative',
 };
 

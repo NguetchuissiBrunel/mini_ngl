@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import FloatingHearts from '@/components/FloatingHearts';
 import ThemeToggle from '@/components/ThemeToggle';
-import { MessageCircle, Send } from 'lucide-react';
+import { MessageCircle, Send, Heart, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Page() {
@@ -31,11 +31,21 @@ export default function Page() {
           </div>
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-dancing font-bold text-rose-600 dark:text-rose-600 drop-shadow-sm mb-4 transition-colors">
-          Mini NGL
-        </h1>
-        <p className="text-lg md:text-2xl text-rose-800/80 dark:text-rose-500/90 font-medium tracking-wide transition-colors">
-          Spread Love & Messages
+        <div className="relative mb-6">
+          <div className="absolute -top-6 -left-8 text-rose-400 rotate-12 animate-pulse">
+            <Heart size={24} fill="currentColor" />
+          </div>
+          <div className="absolute -bottom-6 -right-8 text-rose-400 -rotate-12 animate-pulse delay-75">
+            <Heart size={20} fill="currentColor" />
+          </div>
+
+          <h1 className="text-7xl md:text-9xl font-allura font-bold bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(225,29,72,0.3)] transition-all">
+            Tell-Mi
+          </h1>
+        </div>
+
+        <p className="text-2xl md:text-3xl font-allura text-rose-600 font-medium mb-4 italic dark:text-rose-300">
+          "L&apos;amour s&apos;exprime en quelques mots"
         </p>
 
         <div className="flex flex-col md:flex-row gap-4 mt-8 w-full max-w-sm">
