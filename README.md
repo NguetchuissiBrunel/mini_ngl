@@ -9,6 +9,7 @@ Une application web interactive et élégante pour envoyer des messages anonymes
 -   **Animations** : Cœurs flottants et effets interactifs pour une expérience fluide.
 -   **Design Responsive** : Optimisé pour tous les écrans, du mobile au desktop.
 
+
 ## Technologies Utilisées ✨
 
 -   **Next.js 15+** (App Router & Server Components)
