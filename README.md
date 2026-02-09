@@ -1,4 +1,4 @@
-# Mini NGL 💘
+# Mini NGL(Tell mi) 💘
 
 Une application web interactive et élégante pour envoyer des messages anonymes pour la Saint-Valentin.
 
