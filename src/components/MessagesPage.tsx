@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useRef, useLayoutEffect, useEffect } from 'react';
-import { Share2, ArrowLeft, Search, X, Heart } from 'lucide-react';
+import { ArrowLeft, Search, X, Heart } from 'lucide-react';
 import FloatingHearts from '@/components/FloatingHearts';
-import { useModal } from '@/context/ModalContext';
+
 import Link from 'next/link';
 
 import { Message } from '@/types/message';
@@ -24,8 +24,7 @@ interface MessagesPageProps {
 // Composant pour un message individuel
 const MessageCard = ({ message, onLike, isLiked }: MessageCardProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [isSharing, setIsSharing] = useState(false);
-  const { showAlert } = useModal();
+
 
   // Extraire les valeurs directement
   const pseudo = message.pseudo;
@@ -54,110 +53,12 @@ const MessageCard = ({ message, onLike, isLiked }: MessageCardProps) => {
   const images = getImages();
 
   // Pré-chargement des polices et de la bibliothèque pour éviter les délais au clic
-  useEffect(() => {
-    // Pré-charger la lib html-to-image
-    import('html-to-image').then(() => {
-      console.log('html-to-image pré-chargé');
-    });
-  }, []);
 
-  const handleShare = async () => {
-    if (!cardRef.current || isSharing) return;
 
-    setIsSharing(true);
 
-    // Ajout d'une classe temporaire pour stopper les animations pendant la capture
-    // Cela évite les décalages visuels et les erreurs de rendu sur mobile
-    const cardElement = cardRef.current;
-    cardElement.classList.add('capturing-screenshot');
-
-    try {
-      // Attendre que les polices soient chargées
-      if (document.fonts) {
-        await document.fonts.ready;
-      }
-
-      // Import dynamique (sera instantané car pré-chargé)
-      const { toBlob } = await import('html-to-image');
-
-      // Optimisation mobile : pixelRatio réduit si petit écran pour la rapidité
-      const isMobile = window.innerWidth < 768;
-
-      // Détecter si on est en mode sombre pour adapter l'image générée
-      const isDarkMode = document.documentElement.classList.contains('dark');
-
-      const options = {
-        pixelRatio: isMobile ? 1.5 : 2,
-        cacheBust: true,
-        backgroundColor: isDarkMode ? '#1a0b0a' : '#ffffff', // Fond adapté au thème
-        filter: (node: HTMLElement) => {
-          // Filtrer les éléments qui pourraient gêner
-          return node.id !== 'share-button' && !node.classList?.contains('animate-ping-slow');
-        },
-        style: {
-          backdropFilter: 'none',
-          backgroundColor: isDarkMode ? 'rgba(42, 21, 19, 0.98)' : 'rgba(255, 255, 255, 0.98)',
-          borderRadius: '24px', // S'assurer que les bords arrondis sont bien rendus
-        }
-      };
-
-      // Capturer le composant
-      const blob = await toBlob(cardElement, options);
-
-      // Retirer la classe de capture immédiatement après toBlob
-      cardElement.classList.remove('capturing-screenshot');
-
-      if (!blob) throw new Error("La capture de l'image a échoué.");
-
-      const uniqueFilename = `TellMi-${message.id || 'msg'}-${Date.now()}.png`;
-      const file = new File([blob], uniqueFilename, { type: 'image/png' });
-
-      // Tentative de partage natif
-      let sharedSuccessfully = false;
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({
-            files: [file],
-            title: 'Message Secret',
-            text: `Regarde ce message secret ! 💌`,
-          });
-          sharedSuccessfully = true;
-        } catch (shareError: any) {
-          console.log('Détail du retour navigator.share:', shareError.name);
-          if (shareError.name === 'AbortError') return;
-          console.warn('Le partage natif a échoué, essai du fallback...', shareError);
-        }
-      }
-
-      // Fallback : Téléchargement
-      if (!sharedSuccessfully) {
-        const dataUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.download = uniqueFilename;
-        link.href = dataUrl;
-        link.click();
-        URL.revokeObjectURL(dataUrl);
-
-        // Message adapté si on est sur mobile hors HTTPS (ex: adresse IP locale)
-        const isNotSecure = !window.isSecureContext;
-        if (isNotSecure && isMobile) {
-          showAlert('Note : Le partage direct (WhatsApp/etc.) nécessite HTTPS. L\'image a été téléchargée à la place.', 'Contexte non sécurisé', 'info');
-        } else {
-          showAlert('Image prête ! Elle a été téléchargée car le partage direct n\'est pas supporté par votre navigateur.', 'Succès', 'success');
-        }
-      }
-
-    } catch (error: any) {
-      cardElement.classList.remove('capturing-screenshot');
-      console.error('Erreur lors du processus de partage:', error);
-      showAlert(`Oups ! Une erreur est survenue : ${error.message || 'Erreur technique'}`, 'Erreur', 'error');
-    } finally {
-      setIsSharing(false);
-    }
-  };
 
   const handleLike = () => {
-    if (message.id && !isSharing) {
+    if (message.id) {
       onLike(message.id);
     }
   };
@@ -330,20 +231,7 @@ const MessageCard = ({ message, onLike, isLiked }: MessageCardProps) => {
         </button>
 
         {/* Bouton Partager à droite */}
-        <button
-          id="share-button"
-          onClick={handleShare}
-          disabled={isSharing}
-          className={`flex items-center gap-1.5 sm:gap-2 bg-pink-500 hover:bg-pink-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white px-3 sm:px-4 py-2 rounded-full shadow-md transition-all duration-200 ${isSharing ? 'opacity-70 cursor-wait' : 'hover:scale-105 active:scale-95'} text-sm sm:text-base`}
-          title={isSharing ? "Génération de l'image..." : "Partager sur WhatsApp"}
-        >
-          {isSharing ? (
-            <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-          ) : (
-            <Share2 size={16} className="sm:w-5 sm:h-5" />
-          )}
-          <span className="font-medium">{isSharing ? 'Génération...' : 'Partager'}</span>
-        </button>
+
       </div>
     </div>
 
