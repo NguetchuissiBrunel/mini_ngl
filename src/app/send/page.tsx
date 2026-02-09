@@ -37,6 +37,16 @@ export default function SendMessagePage() {
     }));
   };
 
+  const handleCloseSuccess = () => {
+    setFormData({
+      pseudo: '',
+      recipient: '',
+      gender: 'Femme',
+      message: ''
+    });
+    setShowSuccess(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -224,16 +234,28 @@ export default function SendMessagePage() {
       {/* Success Modal */}
       <AnimatePresence>
         {showSuccess && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-rose-950/20 backdrop-blur-md">
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-rose-950/20 backdrop-blur-md"
+            onClick={handleCloseSuccess}
+          >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="bg-white dark:bg-rose-950/90 border-2 border-rose-200 dark:border-rose-800 rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl relative overflow-hidden text-center"
+              onClick={(e) => e.stopPropagation()}
             >
               {/* Background Decoration */}
               <div className="absolute top-0 right-0 -mr-8 -mt-8 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl" />
               <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl" />
+
+              {/* Close Button */}
+              <button
+                onClick={handleCloseSuccess}
+                className="absolute top-4 right-4 p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors z-20"
+              >
+                <X className="w-5 h-5 text-rose-400 dark:text-rose-400" />
+              </button>
 
               <div className="relative z-10">
                 <div className="w-20 h-20 bg-gradient-to-br from-rose-500 to-pink-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-rose-500/30 rotate-3">
@@ -247,15 +269,7 @@ export default function SendMessagePage() {
 
                 <div className="space-y-3">
                   <button
-                    onClick={() => {
-                      setFormData({
-                        pseudo: '',
-                        recipient: '',
-                        gender: 'Femme',
-                        message: ''
-                      });
-                      setShowSuccess(false);
-                    }}
+                    onClick={handleCloseSuccess}
                     className="w-full py-4 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-2xl transition-all shadow-lg shadow-rose-500/20 active:scale-95 cursor-pointer"
                   >
                     Envoyer un autre message

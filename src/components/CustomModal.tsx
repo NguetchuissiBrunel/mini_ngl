@@ -63,7 +63,7 @@ export default function CustomModal() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={type !== 'confirm' ? hideModal : undefined}
+                        onClick={onCancel || hideModal}
                         className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-md"
                     />
 
@@ -80,15 +80,13 @@ export default function CustomModal() {
 
                         {/* Content */}
                         <div className="relative p-8 flex flex-col items-center text-center">
-                            {/* Close Button (only for info/success/error) */}
-                            {type !== 'confirm' && (
-                                <button
-                                    onClick={hideModal}
-                                    className="absolute top-4 right-4 p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-                                >
-                                    <X className="w-5 h-5 text-gray-400" />
-                                </button>
-                            )}
+                            {/* Close Button (always visible) */}
+                            <button
+                                onClick={onCancel || hideModal}
+                                className="absolute top-4 right-4 p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                            >
+                                <X className="w-5 h-5 text-gray-400" />
+                            </button>
 
                             {/* Icon Section */}
                             <div className="mb-6 p-4 rounded-3xl bg-white dark:bg-rose-900/40 shadow-xl shadow-rose-400/5 ring-1 ring-black/5 dark:ring-white/5 animate-float">
