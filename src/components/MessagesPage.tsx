@@ -66,172 +66,181 @@ const MessageCard = ({ message, onLike, isLiked }: MessageCardProps) => {
   return (
     <div
       ref={cardRef}
-      className="bg-white dark:bg-rose-950/30 backdrop-blur-sm rounded-3xl shadow-lg p-4 sm:p-6 relative border border-rose-200/50 dark:border-rose-600/30 transition-colors"
+      className="bg-white/80 dark:bg-[#1a0505]/60 backdrop-blur-md rounded-3xl shadow-lg p-4 sm:p-6 relative border border-rose-200/50 dark:border-rose-800/20 transition-colors"
       style={{ backdropFilter: 'blur(10px)' }}
     >
-      {/* Images et noms */}
-      <div className="flex items-center justify-center gap-2 sm:gap-4 mb-3 sm:mb-4">
-        {/* Image expéditeur */}
-        <div className="flex flex-col items-center flex-1 min-w-0">
-          <img
-            src={images.expediteur}
-            alt="Expéditeur"
-            className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-pink-300 dark:border-rose-500 flex-shrink-0"
-          />
-          <p className="mt-1 sm:mt-2 text-xs sm:text-sm font-medium text-pink-600 dark:text-rose-400 text-center break-words w-full leading-tight">
-            {pseudo}
-          </p>
-        </div>
+      {/* Decorative Roots */}
+      <img
+        src="/decorative_roots_1770638267923-removebg-preview.png"
+        alt=""
+        className="absolute bottom-0 right-0 w-48 h-48 opacity-40 pointer-events-none z-0 rounded-br-3xl object-contain object-right-bottom"
+      />
 
-        {/* Cœur spécial embellissant avec animation et décorations */}
-        <div className="relative flex-shrink-0">
-          {/* Cœur principal avec gradient et ombre */}
-          <div className="relative">
-            {/* Effet de halo derrière le cœur */}
-            <div className="absolute inset-0 animate-pulse-slow">
+      <div className="relative z-10">
+        {/* Images et noms */}
+        <div className="flex items-center justify-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+          {/* Image expéditeur */}
+          <div className="flex flex-col items-center flex-1 min-w-0">
+            <img
+              src={images.expediteur}
+              alt="Expéditeur"
+              className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-pink-300 dark:border-rose-500 flex-shrink-0"
+            />
+            <p className="mt-1 sm:mt-2 text-xs sm:text-sm font-medium text-pink-600 dark:text-rose-400 text-center break-words w-full leading-tight">
+              {pseudo}
+            </p>
+          </div>
+
+          {/* Cœur spécial embellissant avec animation et décorations */}
+          <div className="relative flex-shrink-0">
+            {/* Cœur principal avec gradient et ombre */}
+            <div className="relative">
+              {/* Effet de halo derrière le cœur */}
+              <div className="absolute inset-0 animate-pulse-slow">
+                <svg
+                  width="48"
+                  height="48"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  className="text-pink-300/50 dark:text-rose-400/30 blur-sm"
+                >
+                  <path
+                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </div>
+
+              {/* Cœur principal avec gradient */}
               <svg
-                width="48"
-                height="48"
+                width="40"
+                height="40"
                 viewBox="0 0 24 24"
-                fill="none"
-                className="text-pink-300/50 dark:text-rose-400/30 blur-sm"
+                fill="url(#heart-gradient)"
+                className="relative z-10 drop-shadow-lg filter animate-float"
               >
+                {/* Définition du gradient */}
+                <defs>
+                  <linearGradient id="heart-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#ec4899" stopOpacity="1" />
+                    <stop offset="50%" stopColor="#f472b6" stopOpacity="1" />
+                    <stop offset="100%" stopColor="#f9a8d4" stopOpacity="1" />
+                  </linearGradient>
+                  <filter id="heart-glow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="2" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
                 <path
                   d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-                  fill="currentColor"
+                  filter="url(#heart-glow)"
                 />
+              </svg>
+
+              {/* Petits cœurs volants autour */}
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="#f472b6"
+                className="absolute -top-2 -right-1 animate-bounce-slow"
+              >
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="#ec4899"
+                className="absolute -bottom-1 -left-1 animate-bounce-slow-delayed"
+              >
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
             </div>
 
-            {/* Cœur principal avec gradient */}
+            {/* Flèche stylisée avec animation */}
             <svg
-              width="40"
-              height="40"
+              width="28"
+              height="28"
               viewBox="0 0 24 24"
-              fill="url(#heart-gradient)"
-              className="relative z-10 drop-shadow-lg filter animate-float"
+              fill="none"
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 animate-pulse"
             >
-              {/* Définition du gradient */}
-              <defs>
-                <linearGradient id="heart-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#ec4899" stopOpacity="1" />
-                  <stop offset="50%" stopColor="#f472b6" stopOpacity="1" />
-                  <stop offset="100%" stopColor="#f9a8d4" stopOpacity="1" />
-                </linearGradient>
-                <filter id="heart-glow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="2" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              </defs>
               <path
-                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-                filter="url(#heart-glow)"
+                d="M5 12h14m-6-6l6 6-6 6"
+                stroke="white"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               />
             </svg>
 
-            {/* Petits cœurs volants autour */}
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="#f472b6"
-              className="absolute -top-2 -right-1 animate-bounce-slow"
-            >
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-
-            <svg
-              width="10"
-              height="10"
-              viewBox="0 0 24 24"
-              fill="#ec4899"
-              className="absolute -bottom-1 -left-1 animate-bounce-slow-delayed"
-            >
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
+            {/* Points décoratifs */}
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-pink-400 rounded-full animate-ping-slow" />
+            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-rose-400 rounded-full animate-ping-slow-delayed" />
           </div>
 
-          {/* Flèche stylisée avec animation */}
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 animate-pulse"
-          >
-            <path
-              d="M5 12h14m-6-6l6 6-6 6"
-              stroke="white"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          {/* Image destinataire */}
+          <div className="flex flex-col items-center flex-1 min-w-0">
+            <img
+              src={images.destinataire}
+              alt="Destinataire"
+              className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-pink-400 dark:border-rose-600 flex-shrink-0"
             />
-          </svg>
-
-          {/* Points décoratifs */}
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-pink-400 rounded-full animate-ping-slow" />
-          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-rose-400 rounded-full animate-ping-slow-delayed" />
+            <p className="mt-1 sm:mt-2 text-xs sm:text-sm font-medium text-pink-700 dark:text-rose-300 text-center break-words w-full leading-tight">
+              {nom}
+            </p>
+          </div>
         </div>
 
-        {/* Image destinataire */}
-        <div className="flex flex-col items-center flex-1 min-w-0">
-          <img
-            src={images.destinataire}
-            alt="Destinataire"
-            className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-pink-400 dark:border-rose-600 flex-shrink-0"
-          />
-          <p className="mt-1 sm:mt-2 text-xs sm:text-sm font-medium text-pink-700 dark:text-rose-300 text-center break-words w-full leading-tight">
-            {nom}
+        {/* Bulle de message */}
+        <div className="relative bg-pink-50 dark:bg-rose-900/60 rounded-2xl p-4 sm:p-6 shadow-inner">
+          <p className="text-gray-800 dark:text-rose-100 text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">
+            {contenu}
           </p>
         </div>
-      </div>
 
-      {/* Bulle de message */}
-      <div className="relative bg-pink-50 dark:bg-rose-900/60 rounded-2xl p-4 sm:p-6 shadow-inner">
-        <p className="text-gray-800 dark:text-rose-100 text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">
-          {contenu}
-        </p>
-      </div>
+        {/* Boutons en bas - Like et Partager */}
+        <div className="flex items-center justify-between gap-2 sm:gap-4 mt-3 sm:mt-4">
+          {/* Bouton Like à gauche */}
+          <button
+            onClick={handleLike}
+            className={`flex items-center gap-1.5 sm:gap-2 bg-transparent hover:bg-pink-50 dark:hover:bg-rose-900/30 text-pink-600 dark:text-rose-400 px-3 sm:px-4 py-2 rounded-full transition-all duration-200 hover:scale-105 active:scale-95 text-sm sm:text-base`}
+            title={isLiked ? "Retirer mon j'aime" : "J'aime"}
+          >
+            {isLiked ? (
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="text-pink-500 dark:text-rose-500 sm:w-6 sm:h-6"
+              >
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+            ) : (
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="text-pink-600 dark:text-rose-400 sm:w-6 sm:h-6"
+              >
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+            )}
+            <span className="font-bold text-lg">{likesCount || 0}</span>
+          </button>
 
-      {/* Boutons en bas - Like et Partager */}
-      <div className="flex items-center justify-between gap-2 sm:gap-4 mt-3 sm:mt-4">
-        {/* Bouton Like à gauche */}
-        <button
-          onClick={handleLike}
-          className={`flex items-center gap-1.5 sm:gap-2 bg-transparent hover:bg-pink-50 dark:hover:bg-rose-900/30 text-pink-600 dark:text-rose-400 px-3 sm:px-4 py-2 rounded-full transition-all duration-200 hover:scale-105 active:scale-95 text-sm sm:text-base`}
-          title={isLiked ? "Retirer mon j'aime" : "J'aime"}
-        >
-          {isLiked ? (
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="text-pink-500 dark:text-rose-500 sm:w-6 sm:h-6"
-            >
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-          ) : (
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="text-pink-600 dark:text-rose-400 sm:w-6 sm:h-6"
-            >
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-          )}
-          <span className="font-bold text-lg">{likesCount || 0}</span>
-        </button>
+          {/* Bouton Partager à droite */}
 
-        {/* Bouton Partager à droite */}
-
+        </div>
       </div>
     </div>
 
